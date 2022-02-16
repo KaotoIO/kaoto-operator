@@ -1,0 +1,6 @@
+apiVersion: kaoto.io/v1alpha1
+kind: Kaoto
+metadata:
+  name: kaoto-sample
+spec:
+  # TODO(user): Add fields here
