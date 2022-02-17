@@ -3,4 +3,11 @@ kind: Kaoto
 metadata:
   name: kaoto-sample
 spec:
-  # TODO(user): Add fields here
+  backend:
+    image: kaotoio/backend:latest
+    port: 8081
+  frontend:
+    image: kaotoio/frontend:latest
+    port: 8080
+
+

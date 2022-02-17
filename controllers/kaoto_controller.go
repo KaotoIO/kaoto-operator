@@ -40,6 +40,7 @@ type KaotoReconciler struct {
 //+kubebuilder:rbac:groups=kaoto.io,resources=kaotoes,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=kaoto.io,resources=kaotoes/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=kaoto.io,resources=kaotoes/finalizers,verbs=update
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -63,6 +64,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
+	// check the backend deployment
 	backendName := kaoto.Name + "-backend"
 	backendDep := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: backendName, Namespace: kaoto.Namespace}, backendDep)
@@ -77,6 +79,29 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, err
 		}
 		// Deployment created successfully - return and requeue
+	//	return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		log.Error(err, "Failed to get Deployment")
+		return ctrl.Result{}, err
+	}
+
+	//check the frontend deployment
+	frontendName := kaoto.Name + "-frontend"
+	frontendDep := &appsv1.Deployment{}
+
+	err = r.Get(ctx, types.NamespacedName{Name: frontendName, Namespace: kaoto.Namespace}, frontendDep)
+	if err != nil && errors.IsNotFound(err) {
+		frontend := kaoto.Spec.Frontend
+		frontendDep = r.getDeployment(frontendName, kaoto.Namespace, "kaoto-frontend", frontend.Image, frontend.Port)
+		log.Info("Creating a new Deployment")
+		err = r.Create(ctx, frontendDep)
+
+		if err != nil {
+			log.Error(err, "Failed to create kaoto frontend deployment", "Deployment.Namespace", frontendDep.Namespace, "Deployment.Name", frontendDep.Name)
+			return ctrl.Result{}, err
+		}
+		// Deployment created successfully - return and requeue
+
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
 		log.Error(err, "Failed to get Deployment")
