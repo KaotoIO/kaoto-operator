@@ -36,9 +36,16 @@ import (
 	//+kubebuilder:scaffold:imports
 )
 
+const backendName = "kaoto-backend"
+const frontendName = "kaoto-frontend"
+
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme        = runtime.NewScheme()
+	setupLog      = ctrl.Log.WithName("setup")
+	frontendImage string
+	frontendPort  int32
+	backendImage  string
+	backendPort   int32
 )
 
 func init() {
@@ -78,9 +85,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	kaotoParams := controllers.KaotoParams{
+		//frontendName:frontendName
+		FrontendName: frontendName,
+		FrontendImg:  frontendImage,
+		FrontendPort: frontendPort,
+
+		BackendName: backendName,
+		BackendPort: backendPort,
+		BackendImg:  backendImage,
+	}
 	if err = (&controllers.KaotoReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		KaotoParams: kaotoParams,
+		Client:      mgr.GetClient(),
+		Scheme:      mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Kaoto")
 		os.Exit(1)

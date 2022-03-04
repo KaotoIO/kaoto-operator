@@ -19,9 +19,7 @@ package controllers
 import (
 	"context"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -33,6 +31,7 @@ import (
 
 // KaotoReconciler reconciles a Kaoto object
 type KaotoReconciler struct {
+	KaotoParams KaotoParams
 	client.Client
 	Scheme *runtime.Scheme
 }
@@ -65,12 +64,12 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	// check the backend deployment
-	backendName := kaoto.Name + "-backend"
+
 	backendDep := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: backendName, Namespace: kaoto.Namespace}, backendDep)
+	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.BackendName, Namespace: kaoto.Namespace}, backendDep)
 	if err != nil && errors.IsNotFound(err) {
-		backend := kaoto.Spec.Backend
-		backendDep = r.getDeployment(backendName, kaoto.Namespace, "kaoto-backend", backend.Image, backend.Port)
+
+		backendDep = GetBackendDeployment(r.KaotoParams, *kaoto)
 		log.Info("Creating a new Deployment")
 		err = r.Create(ctx, backendDep)
 
@@ -79,20 +78,18 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, err
 		}
 		// Deployment created successfully - return and requeue
-	//	return ctrl.Result{Requeue: true}, nil
+		//	return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
 		log.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
 	}
 
 	//check the frontend deployment
-	frontendName := kaoto.Name + "-frontend"
 	frontendDep := &appsv1.Deployment{}
 
-	err = r.Get(ctx, types.NamespacedName{Name: frontendName, Namespace: kaoto.Namespace}, frontendDep)
+	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.FrontendName, Namespace: kaoto.Namespace}, frontendDep)
 	if err != nil && errors.IsNotFound(err) {
-		frontend := kaoto.Spec.Frontend
-		frontendDep = r.getDeployment(frontendName, kaoto.Namespace, "kaoto-frontend", frontend.Image, frontend.Port)
+		frontendDep = GetFrontEndDeployment(r.KaotoParams, *kaoto)
 		log.Info("Creating a new Deployment")
 		err = r.Create(ctx, frontendDep)
 
@@ -109,44 +106,6 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	return ctrl.Result{}, nil
-}
-
-func (r *KaotoReconciler) getDeployment(name, namespace, imageName, image string, port int32) *appsv1.Deployment {
-	ls := labelsForKaotoBackend(name)
-	replicas := int32(1)
-	dep := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: ls,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: ls,
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{{
-						Image: image,
-						Name:  imageName,
-						Ports: []corev1.ContainerPort{{
-							ContainerPort: port,
-							Name:          "port",
-						}},
-					}},
-				},
-			},
-		},
-	}
-	// Set Memcached instance as the owner and controller
-	return dep
-}
-
-func labelsForKaotoBackend(name string) map[string]string {
-	return map[string]string{"app": "kaoto-backend", "kaoto_cr": name}
 }
 
 // SetupWithManager sets up the controller with the Manager.

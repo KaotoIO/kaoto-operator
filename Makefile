@@ -1,3 +1,9 @@
+#Kaoto variables:
+FRONTEND_IMAGE ?= kaotoio/frontend:latest
+FRONTEND_PORT ?= 8080
+BACKEND_IMAGE ?= kaotoio/backend:latest
+BACKEND_PORT ?= 8081
+
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
