@@ -44,10 +44,6 @@ spec:
                     format: int32
                     type: integer
                 type: object
-              foo:
-                description: Foo is an example field of Kaoto. Edit kaoto_types.go
-                  to remove/update
-                type: string
               frontend:
                 properties:
                   image:

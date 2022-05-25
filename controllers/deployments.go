@@ -39,6 +39,7 @@ func getDeployment(kaotoName, name, namespace, imageName, image string, port int
 							ContainerPort: port,
 							Name:          "port",
 						}},
+						ImagePullPolicy: "Never",
 					}},
 				},
 			},

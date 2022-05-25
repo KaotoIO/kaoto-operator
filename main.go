@@ -18,8 +18,8 @@ package main
 
 import (
 	"flag"
+	routev1 "github.com/openshift/api/route/v1"
 	"os"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -40,19 +40,20 @@ const backendName = "kaoto-backend"
 const frontendName = "kaoto-frontend"
 
 var (
+	//frontendImage = "kaotoio/frontend:nightly"
+	frontendImage = "default-route-openshift-image-registry.apps-crc.testing/kaoto-operator/kaoto-ui-openshift:latest"
+	frontendPort  = int32(8080)
+	backendImage  = "kaotoio/backend:nightly"
+	backendPort   = int32(8081)
 	scheme        = runtime.NewScheme()
 	setupLog      = ctrl.Log.WithName("setup")
-	frontendImage string
-	frontendPort  int32
-	backendImage  string
-	backendPort   int32
 )
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(kaotoiov1alpha1.AddToScheme(scheme))
-	//+kubebuilder:scaffold:scheme
+
 }
 
 func main() {
@@ -85,6 +86,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := routev1.AddToScheme(mgr.GetScheme()); err != nil {
+		setupLog.Error(err, "problem with scheme registration")
+		os.Exit(1)
+	}
 	kaotoParams := controllers.KaotoParams{
 		//frontendName:frontendName
 		FrontendName: frontendName,
@@ -95,6 +100,7 @@ func main() {
 		BackendPort: backendPort,
 		BackendImg:  backendImage,
 	}
+
 	if err = (&controllers.KaotoReconciler{
 		KaotoParams: kaotoParams,
 		Client:      mgr.GetClient(),

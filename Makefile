@@ -1,8 +1,8 @@
 #Kaoto variables:
-FRONTEND_IMAGE ?= kaotoio/frontend:latest
-FRONTEND_PORT ?= 8080
-BACKEND_IMAGE ?= kaotoio/backend:latest
-BACKEND_PORT ?= 8081
+FRONTEND_IMAGE = "kaotoio/frontend:latest"
+FRONTEND_PORT = 8080
+BACKEND_IMAGE = "kaotoio/backend:latest"
+BACKEND_PORT = 8081
 
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
@@ -35,15 +35,17 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # kaoto.io/kaoto-operator-bundle:$VERSION and kaoto.io/kaoto-operator-catalog:$VERSION.
-#IMAGE_TAG_BASE ?= kaoto.io/kaoto-operator
-IMAGE_TAG_BASE ?= image-registry.openshift-image-registry.svc:5000/kaoto-operator-system/kaoto-operator
+IMAGE_TAG_BASE ?= docker.io/library/kaoto-operator
+#IMAGE_TAG_BASE ?= it/kaoto-operator/kaoto-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 
 # Image URL to use all ilding/pushing image targets
-IMG_DOCKER ?= default-route-openshift-image-registry.apps-crc.testing/kaoto-operator-system/kaoto-operator:latest
+#IMG_DOCKER ?= default-route-openshift-image-registry.apps-crc.testing/kaoto-operator/kaoto-operator:latest
+#IMG_DOCKER ?= default-route-openshift-image-registry.apps-crc.testing/kaoto-operator/kaoto-ui-openshift:latest
+IMG_DOCKER ?= kaoto-operator:latest
 IMG ?= ${IMAGE_TAG_BASE}:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
@@ -115,11 +117,12 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
-	podman build -t ${IMG_DOCKER} .
+	docker build -t ${IMG_DOCKER} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
-	podman push ${IMG_DOCKER} --tls-verify=false
+	docker push ${IMG_DOCKER}
+ #--tls-verify=false
 
 ##@ Deployment
 

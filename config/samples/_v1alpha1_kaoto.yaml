@@ -4,10 +4,10 @@ metadata:
   name: kaoto-sample
 spec:
   backend:
-    image: kaotoio/backend:latest
+    image: kaotoio/backend:nightly
     port: 8081
   frontend:
-    image: kaotoio/frontend:latest
+    image: kaotoio/frontend:nightly
     port: 8080
 
 

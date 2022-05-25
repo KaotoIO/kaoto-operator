@@ -28,8 +28,6 @@ type KaotoSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Kaoto. Edit kaoto_types.go to remove/update
-	Foo      string        `json:"foo,omitempty"`
 	Backend  KaotoBackend  `json:"backend,omitempty"`
 	Frontend KaotoFrontend `json:"frontend,omitempty"`
 }
