@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  name: kaoto-operator-integrator_binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kaoto-operator-integrator-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kaoto-operator

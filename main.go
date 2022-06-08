@@ -41,9 +41,9 @@ const frontendName = "kaoto-frontend"
 
 var (
 	//frontendImage = "kaotoio/frontend:nightly"
-	frontendImage = "default-route-openshift-image-registry.apps-crc.testing/kaoto-operator/kaoto-ui-openshift:latest"
+	frontendImage = "quay.io/kaotoio/frontend:nightly"
 	frontendPort  = int32(8080)
-	backendImage  = "kaotoio/backend:nightly"
+	backendImage  = "quay.io/kaotoio/backend:nightly"
 	backendPort   = int32(8081)
 	scheme        = runtime.NewScheme()
 	setupLog      = ctrl.Log.WithName("setup")
