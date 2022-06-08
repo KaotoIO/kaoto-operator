@@ -9,6 +9,7 @@ BACKEND_PORT = 8081
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
 VERSION ?= 0.0.1
+IMG_VERSION ?= latest
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -44,7 +45,7 @@ BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # Image URL to use all ilding/pushing image targets
 #IMG_DOCKER ?= default-route-openshift-image-registry.apps-crc.testing/kaoto-operator/kaoto-operator:latest
 #IMG_DOCKER ?= default-route-openshift-image-registry.apps-crc.testing/kaoto-operator/kaoto-ui-openshift:latest
-IMG ?= ${IMAGE_TAG_BASE}:latest
+IMG ?= ${IMAGE_TAG_BASE}:${IMG_VERSION}
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
 
