@@ -1,0 +1,18 @@
+domain: kaoto.io
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: kaoto-operator
+repo: github.com/kaotoIO/kaoto-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kaoto.io
+  kind: Kaoto
+  path: github.com/kaotoIO/kaoto-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"

@@ -1,0 +1,13 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: kaoto-operator-catalog
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: quay.io/kaotoio/kaoto-operator-catalog:v0.0.1
+  displayName: Kaoto Operator Catalog
+  publisher: Kaoto.io
+  updateStrategy:
+    registryPoll:
+      interval: 30m

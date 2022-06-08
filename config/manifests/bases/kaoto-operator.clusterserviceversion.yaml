@@ -1,0 +1,48 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: kaoto-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Kaoto is the Schema for the kaotoes API
+      displayName: Kaoto
+      kind: Kaoto
+      name: kaotos.kaoto.io
+      version: v1alpha1
+  description: Kaoto Operator
+  displayName: Kaoto Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - integration
+  - kaoto
+  - camel-k
+  - designer
+  links:
+  - name: Kaoto Operator
+    url: https://kaoto-operator.domain
+  maturity: alpha
+  provider:
+    name: Kaoto.io
+    url: https://kaoto.io
+  version: 0.0.0
