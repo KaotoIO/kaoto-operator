@@ -21,6 +21,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	v12 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -141,6 +142,23 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			log.Error(err, "failed to create Route")
 		}
 	}
+	//create service account that allows to create kamelets and kameletbidnings
+	defaultServiceAccount := &v1.ServiceAccount{}
+	err = r.Get(ctx, types.NamespacedName{Name: "default", Namespace: kaoto.Namespace}, defaultServiceAccount)
+	if err != nil && errors.IsNotFound(err) {
+		log.Error(err, "unable to find service account")
+	} else {
+		roleBinging := &v12.RoleBinding{}
+		err = r.Get(ctx, types.NamespacedName{Name: "integrator-role-binding", Namespace: kaoto.Namespace}, roleBinging)
+		if err != nil && errors.IsNotFound(err) {
+			role := CreateIntegratorRole(*kaoto)
+			err = r.Create(ctx, role)
+			roleBinding := CreateRoleBinding(role, defaultServiceAccount)
+			err = r.Create(ctx, roleBinding)
+
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 
