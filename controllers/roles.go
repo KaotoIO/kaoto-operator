@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func CreateRoleBinding(role *v12.ClusterRole, account *v1.ServiceAccount) *v12.RoleBinding {
+func CreateRoleBinding(role *v12.Role, account *v1.ServiceAccount) *v12.RoleBinding {
 	binding := v12.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "integrator-role-binding",
@@ -29,8 +29,8 @@ func CreateRoleBinding(role *v12.ClusterRole, account *v1.ServiceAccount) *v12.R
 	return &binding
 }
 
-func CreateIntegratorRole(kaoto kaotoiov1alpha1.Kaoto) *v12.ClusterRole {
-	role := &v12.ClusterRole{
+func CreateIntegratorRole(kaoto kaotoiov1alpha1.Kaoto) *v12.Role {
+	role := &v12.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "integrator-role",
 			Namespace: kaoto.Namespace,
