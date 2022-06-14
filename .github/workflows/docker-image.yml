@@ -1,0 +1,33 @@
+name: Build and Publish the Operator images
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: docker/login-action@v2
+      with:
+        registry: quay.io
+        username: ${{ secrets.QUAY_USERNAME }}
+        password: ${{ secrets.QUAY_PASSWORD }}
+    - name: Build the Docker image
+      run: make docker-build 
+    - name: Push the image 
+      run: make docker-push
+    - name: Build the OLM bundle image
+      run: make bundle-build 
+    - name: Push the OLM bundle image 
+      run: make bundle-push
+    - name: Make the catalog image
+      run: make catalog-build 
+    - name: Push the catalog image
+      run: make catalog-push
+    
+      
