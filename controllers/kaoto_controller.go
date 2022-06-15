@@ -44,8 +44,10 @@ type KaotoReconciler struct {
 //+kubebuilder:rbac:groups=kaoto.io,resources=kaotoes/finalizers,verbs=update
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="camel.apache.org",resources=kameletbindings,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="camel.apache.org",resources=kameletbindings;kamelets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="route.openshift.io",resources=routes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
+//+kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings;roles,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -74,19 +76,16 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	backendDep := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.BackendName, Namespace: kaoto.Namespace}, backendDep)
 	if err != nil && errors.IsNotFound(err) {
-
 		backendDep = GetBackendDeployment(r.KaotoParams, *kaoto)
-		log.Info("Creating a backend  new Deployment")
 		err = r.Create(ctx, backendDep)
 
 		if err != nil {
-			log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", backendDep.Namespace, "Deployment.Name", backendDep.Name)
+			log.Error(err, "failed to create Deployment for the backend", "Deployment.Namespace", backendDep.Namespace, "Deployment.Name", backendDep.Name)
 			return ctrl.Result{}, err
+		} else {
+			log.Info("the backend deployment was created", "Kaoto.Deployment.Backend", kaoto.Namespace, "Deployment.Name", backendDep.Name)
 		}
-		// Deployment created successfully - return and requeue
-		//	return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
-		log.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
 	}
 
@@ -96,18 +95,14 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.FrontendName, Namespace: kaoto.Namespace}, frontendDep)
 	if err != nil && errors.IsNotFound(err) {
 		frontendDep = GetFrontEndDeployment(r.KaotoParams, *kaoto)
-		//log.Info("Creating a frontend new Deployment")
 		err = r.Create(ctx, frontendDep)
 
 		if err != nil {
-			log.Error(err, "Failed to create kaoto frontend deployment", "Deployment.Namespace", frontendDep.Namespace, "Deployment.Name", frontendDep.Name)
+			log.Error(err, "Failed to create Deployment for the frontend", "Deployment.Namespace", frontendDep.Namespace, "Deployment.Name", frontendDep.Name)
 			return ctrl.Result{}, err
 		}
-		// Deployment created successfully - return and requeue
-
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
-		log.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
 	}
 
@@ -116,8 +111,12 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	if err != nil && errors.IsNotFound(err) {
 		backendService = NewService(kaoto.Name, r.KaotoParams.BackendName, kaoto.Namespace, r.KaotoParams.BackendPort, r.KaotoParams.BackendPort)
 		err = r.Create(ctx, backendService)
+
 		if err != nil {
 			log.Error(err, "failed to create backend service")
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the backend service "+backendService.Name+"was created", "Kaoto.Service.Backend", kaoto.Namespace)
 		}
 	}
 
@@ -129,6 +128,9 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		err = r.Create(ctx, frontendService)
 		if err != nil {
 			log.Error(err, "failed to create frontend service")
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the backend service "+frontendService.Name+"was created", "Kaoto.Service.Frontend", kaoto.Namespace)
 		}
 	}
 
@@ -140,6 +142,9 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		err = r.Create(ctx, kaotoRoute)
 		if err != nil {
 			log.Error(err, "failed to create Route")
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the kaoto route "+kaotoRoute.Name+"was created", "Kaoto.Route", kaoto.Namespace)
 		}
 	}
 	//create service account that allows to create kamelets and kameletbidnings
@@ -153,8 +158,21 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if err != nil && errors.IsNotFound(err) {
 			role := CreateIntegratorRole(*kaoto)
 			err = r.Create(ctx, role)
+			if err != nil {
+				log.Error(err, "unable to create the integrator role")
+				return ctrl.Result{}, err
+			} else {
+				log.Info("the integrator role was created", "Kaoto.namespace", kaoto.Namespace)
+			}
+
 			roleBinding := CreateRoleBinding(role, defaultServiceAccount)
 			err = r.Create(ctx, roleBinding)
+			if err != nil {
+				log.Error(err, "unable to create the role binding", "Kaoto.namespace", kaoto.Namespace)
+				return ctrl.Result{}, err
+			} else {
+				log.Info("the role bindingf was created", "Kaoto.namespace", kaoto.Namespace, "kaoto.rolebinding", roleBinging.Name)
+			}
 
 		}
 	}
