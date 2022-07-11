@@ -158,7 +158,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if err != nil && errors.IsNotFound(err) {
 			role := CreateIntegratorRole(*kaoto)
 			err = r.Create(ctx, role)
-			if err != nil {
+			if err != nil && !errors.IsAlreadyExists(err) {
 				log.Error(err, "unable to create the integrator role")
 				return ctrl.Result{}, err
 			} else {
