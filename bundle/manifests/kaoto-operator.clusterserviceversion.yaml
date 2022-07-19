@@ -46,6 +46,14 @@ spec:
         - apiGroups:
           - ""
           resources:
+          - serviceaccounts
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
           - services
           verbs:
           - create
@@ -71,6 +79,7 @@ spec:
           - camel.apache.org
           resources:
           - kameletbindings
+          - kamelets
           verbs:
           - create
           - delete
@@ -105,6 +114,21 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - clusterrolebindings
+          - clusterroles
+          - rolebindings
+          - roles
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - route.openshift.io
           resources:

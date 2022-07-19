@@ -47,7 +47,7 @@ type KaotoReconciler struct {
 //+kubebuilder:rbac:groups="camel.apache.org",resources=kameletbindings;kamelets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="route.openshift.io",resources=routes,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
-//+kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings;roles,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings;roles;clusterroles;clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -148,33 +148,27 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 	//create service account that allows to create kamelets and kameletbidnings
-	defaultServiceAccount := &v1.ServiceAccount{}
-	err = r.Get(ctx, types.NamespacedName{Name: "default", Namespace: kaoto.Namespace}, defaultServiceAccount)
+	roleBinging := &v12.RoleBinding{}
+	err = r.Get(ctx, types.NamespacedName{Name: "integrator-role-binding", Namespace: kaoto.Namespace}, roleBinging)
 	if err != nil && errors.IsNotFound(err) {
-		log.Error(err, "unable to find service account")
-	} else {
-		roleBinging := &v12.RoleBinding{}
-		err = r.Get(ctx, types.NamespacedName{Name: "integrator-role-binding", Namespace: kaoto.Namespace}, roleBinging)
-		if err != nil && errors.IsNotFound(err) {
-			role := CreateIntegratorRole(*kaoto)
-			err = r.Create(ctx, role)
-			if err != nil && !errors.IsAlreadyExists(err) {
-				log.Error(err, "unable to create the integrator role")
-				return ctrl.Result{}, err
-			} else {
-				log.Info("the integrator role was created", "Kaoto.namespace", kaoto.Namespace)
-			}
-
-			roleBinding := CreateRoleBinding(role, defaultServiceAccount)
-			err = r.Create(ctx, roleBinding)
-			if err != nil {
-				log.Error(err, "unable to create the role binding", "Kaoto.namespace", kaoto.Namespace)
-				return ctrl.Result{}, err
-			} else {
-				log.Info("the role bindingf was created", "Kaoto.namespace", kaoto.Namespace, "kaoto.rolebinding", roleBinging.Name)
-			}
-
+		role := CreateIntegratorClusterRole(*kaoto)
+		err = r.Create(ctx, role)
+		if err != nil && !errors.IsAlreadyExists(err) {
+			log.Error(err, "unable to create the integrator role")
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the integrator role was created", "Kaoto.namespace", kaoto.Namespace)
 		}
+
+		roleBinding := CreateClusterRoleBinding(role, kaoto.Namespace)
+		err = r.Create(ctx, roleBinding)
+		if err != nil {
+			log.Error(err, "unable to create the role binding", "Kaoto.namespace", kaoto.Namespace)
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the role binding was created", "Kaoto.namespace", kaoto.Namespace, "kaoto.rolebinding", roleBinging.Name)
+		}
+
 	}
 
 	return ctrl.Result{}, nil
