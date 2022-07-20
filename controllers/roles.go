@@ -29,7 +29,7 @@ func CreateRoleBinding(role *v12.Role) *v12.RoleBinding {
 func CreateClusterRoleBinding(role *v12.ClusterRole, namespace string) *v12.ClusterRoleBinding {
 	binding := v12.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "integrator-role-binding-cr",
+			Name:      "integrator-role-binding-" + namespace + "-cr",
 			Namespace: role.Namespace,
 		},
 		RoleRef: v12.RoleRef{
@@ -57,6 +57,9 @@ func CreateIntegratorClusterRole(kaoto kaotoiov1alpha1.Kaoto) *v12.ClusterRole {
 			APIGroups: []string{"camel.apache.org"},
 			Resources: []string{"kamelets", "kameletbindings"},
 		},
+			{Verbs: []string{"watch", "get", "list"},
+				APIGroups: []string{""},
+				Resources: []string{"pods"}},
 		},
 	}
 	return role
@@ -72,7 +75,11 @@ func CreateIntegratorRole(kaoto kaotoiov1alpha1.Kaoto) *v12.Role {
 			APIGroups: []string{"camel.apache.org"},
 			Resources: []string{"kamelets", "kameletbindings"},
 		},
+			{Verbs: []string{"watch", "get", "list"},
+				APIGroups: []string{""},
+				Resources: []string{"pods"}},
 		},
 	}
+
 	return role
 }
