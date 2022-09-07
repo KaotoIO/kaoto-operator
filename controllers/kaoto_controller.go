@@ -148,8 +148,9 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 	//create service account that allows to create kamelets and kameletbidnings
-	roleBinging := &v12.RoleBinding{}
-	err = r.Get(ctx, types.NamespacedName{Name: "integrator-role-binding", Namespace: kaoto.Namespace}, roleBinging)
+	clusterRoleBinging := &v12.ClusterRoleBinding{}
+	err = r.Get(ctx, types.NamespacedName{Name: "integrator-role-binding-" + kaoto.Namespace + "-cr", Namespace: kaoto.Namespace}, clusterRoleBinging)
+
 	if err != nil && errors.IsNotFound(err) {
 		role := CreateIntegratorClusterRole(*kaoto)
 		err = r.Create(ctx, role)
@@ -162,13 +163,13 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 		roleBinding := CreateClusterRoleBinding(role, kaoto.Namespace)
 		err = r.Create(ctx, roleBinding)
+
 		if err != nil {
 			log.Error(err, "unable to create the role binding", "Kaoto.namespace", kaoto.Namespace)
 			return ctrl.Result{}, err
 		} else {
-			log.Info("the role binding was created", "Kaoto.namespace", kaoto.Namespace, "kaoto.rolebinding", roleBinging.Name)
+			log.Info("the role binding was created", "Kaoto.namespace", kaoto.Namespace, "kaoto.rolebinding", clusterRoleBinging.Name)
 		}
-
 	}
 
 	return ctrl.Result{}, nil
