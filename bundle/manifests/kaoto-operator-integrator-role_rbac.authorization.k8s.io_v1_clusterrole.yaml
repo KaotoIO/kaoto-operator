@@ -8,6 +8,8 @@ rules:
   - camel.apache.org
   resources:
   - kameletbindings
+  - integrations
+  - kamelets
   verbs:
   - create
   - delete
@@ -16,3 +18,12 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+    - ""
+  resources:
+    - pods
+    - pods/log
+  verbs:
+    - get
+    - watch
+    - lists

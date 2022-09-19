@@ -25,7 +25,7 @@ metadata:
     capabilities: Basic Install
     operators.operatorframework.io/builder: operator-sdk-v1.15.0+git
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: kaoto-operator.v0.0.1
+  name: kaoto-operator.v0.0.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -41,107 +41,6 @@ spec:
     mediatype: ""
   install:
     spec:
-      clusterPermissions:
-      - rules:
-        - apiGroups:
-          - ""
-          resources:
-          - serviceaccounts
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - ""
-          resources:
-          - services
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - apps
-          resources:
-          - deployments
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - camel.apache.org
-          resources:
-          - kameletbindings
-          - kamelets
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - kaoto.io
-          resources:
-          - kaotoes
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - kaoto.io
-          resources:
-          - kaotoes/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - kaoto.io
-          resources:
-          - kaotoes/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - rbac.authorization.k8s.io
-          resources:
-          - clusterrolebindings
-          - clusterroles
-          - rolebindings
-          - roles
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - route.openshift.io
-          resources:
-          - routes
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        serviceAccountName: kaoto-operator-controller-manager
       deployments:
       - name: kaoto-operator-controller-manager
         spec:
@@ -176,7 +75,13 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
                 image: quay.io/kaotoio/kaoto-operator:latest
+                imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -236,16 +141,78 @@ spec:
           verbs:
           - create
           - patch
+        - apiGroups:
+          - ""
+          resources:
+          - services
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - kaoto.io
+          resources:
+          - kaotoes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - kaoto.io
+          resources:
+          - kaotoes/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - kaoto.io
+          resources:
+          - kaotoes/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         serviceAccountName: kaoto-operator-controller-manager
     strategy: deployment
   installModes:
-  - supported: false
+  - supported: true
     type: OwnNamespace
   - supported: false
     type: SingleNamespace
   - supported: false
     type: MultiNamespace
-  - supported: true
+  - supported: false
     type: AllNamespaces
   keywords:
   - integration
@@ -259,4 +226,4 @@ spec:
   provider:
     name: Kaoto.io
     url: https://kaoto.io
-  version: 0.0.1
+  version: 0.0.2
