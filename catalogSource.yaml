@@ -5,9 +5,9 @@ metadata:
   namespace: openshift-marketplace
 spec:
   sourceType: grpc
-  image: quay.io/kaotoio/kaoto-operator-catalog:v0.0.1
+  image: quay.io/kaotoio/kaoto-operator-catalog:v0.0.2
   displayName: Kaoto Operator Catalog
-  publisher: Kaoto.io
+  publisher: Kaoto.ios
   updateStrategy:
     registryPoll:
       interval: 30m

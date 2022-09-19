@@ -9,5 +9,5 @@ roleRef:
   name: kaoto-operator-integrator-role
 subjects:
 - kind: ServiceAccount
-  name: default
-  namespace: kaoto-operator
+  name: kaoto-operator-integrator-sa
+

@@ -21,7 +21,6 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	v12 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -39,15 +38,12 @@ type KaotoReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=kaoto.io,resources=kaotoes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=kaoto.io,resources=kaotoes/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=kaoto.io,resources=kaotoes/finalizers,verbs=update
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="camel.apache.org",resources=kameletbindings;kamelets,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="route.openshift.io",resources=routes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
-//+kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings;roles;clusterroles;clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=kaoto.io,namespace=kaoto-operator,resources=kaotoes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=kaoto.io,namespace=kaoto-operator,resources=kaotoes/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=kaoto.io,namespace=kaoto-operator,resources=kaotoes/finalizers,verbs=update
+//+kubebuilder:rbac:groups=apps,namespace=kaoto-operator,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",namespace=kaoto-operator,resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="route.openshift.io",namespace=kaoto-operator,resources=routes,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -59,7 +55,6 @@ type KaotoReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-
 	log := log.FromContext(ctx)
 
 	kaoto := &kaotoiov1alpha1.Kaoto{}
@@ -77,6 +72,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.BackendName, Namespace: kaoto.Namespace}, backendDep)
 	if err != nil && errors.IsNotFound(err) {
 		backendDep = GetBackendDeployment(r.KaotoParams, *kaoto)
+		_ = ctrl.SetControllerReference(kaoto, backendDep, r.Scheme)
 		err = r.Create(ctx, backendDep)
 
 		if err != nil {
@@ -95,8 +91,9 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.FrontendName, Namespace: kaoto.Namespace}, frontendDep)
 	if err != nil && errors.IsNotFound(err) {
 		frontendDep = GetFrontEndDeployment(r.KaotoParams, *kaoto)
-		err = r.Create(ctx, frontendDep)
+		_ = ctrl.SetControllerReference(kaoto, frontendDep, r.Scheme)
 
+		err = r.Create(ctx, frontendDep)
 		if err != nil {
 			log.Error(err, "Failed to create Deployment for the frontend", "Deployment.Namespace", frontendDep.Namespace, "Deployment.Name", frontendDep.Name)
 			return ctrl.Result{}, err
@@ -110,6 +107,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.BackendName + "-svc", Namespace: kaoto.Namespace}, backendService)
 	if err != nil && errors.IsNotFound(err) {
 		backendService = NewService(kaoto.Name, r.KaotoParams.BackendName, kaoto.Namespace, r.KaotoParams.BackendPort, r.KaotoParams.BackendPort)
+		_ = ctrl.SetControllerReference(kaoto, backendService, r.Scheme)
 		err = r.Create(ctx, backendService)
 
 		if err != nil {
@@ -119,12 +117,13 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			log.Info("the backend service "+backendService.Name+"was created", "Kaoto.Service.Backend", kaoto.Namespace)
 		}
 	}
-
+	log.Info("backend dep" + backendDep.Spec.Template.Spec.ServiceAccountName)
 	// frontEndService
 	frontendService := &v1.Service{}
 	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.FrontendName + "-svc", Namespace: kaoto.Namespace}, frontendService)
 	if err != nil && errors.IsNotFound(err) {
 		frontendService = NewService(kaoto.Name, r.KaotoParams.FrontendName, kaoto.Namespace, 80, r.KaotoParams.FrontendPort)
+		_ = ctrl.SetControllerReference(kaoto, frontendService, r.Scheme)
 		err = r.Create(ctx, frontendService)
 		if err != nil {
 			log.Error(err, "failed to create frontend service")
@@ -139,6 +138,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	if err != nil && errors.IsNotFound(err) {
 		kaotoRoute = NewRoute(kaoto.Name, kaoto.Name, *frontendService)
+		_ = ctrl.SetControllerReference(kaoto, kaotoRoute, r.Scheme)
 		err = r.Create(ctx, kaotoRoute)
 		if err != nil {
 			log.Error(err, "failed to create Route")
@@ -146,29 +146,6 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		} else {
 			log.Info("the kaoto route "+kaotoRoute.Name+"was created", "Kaoto.Route", kaoto.Namespace)
 		}
-	}
-	//create service account that allows to create kamelets and kameletbidnings
-	roleBinging := &v12.RoleBinding{}
-	err = r.Get(ctx, types.NamespacedName{Name: "integrator-role-binding", Namespace: kaoto.Namespace}, roleBinging)
-	if err != nil && errors.IsNotFound(err) {
-		role := CreateIntegratorClusterRole(*kaoto)
-		err = r.Create(ctx, role)
-		if err != nil && !errors.IsAlreadyExists(err) {
-			log.Error(err, "unable to create the integrator role")
-			return ctrl.Result{}, err
-		} else {
-			log.Info("the integrator role was created", "Kaoto.namespace", kaoto.Namespace)
-		}
-
-		roleBinding := CreateClusterRoleBinding(role, kaoto.Namespace)
-		err = r.Create(ctx, roleBinding)
-		if err != nil {
-			log.Error(err, "unable to create the role binding", "Kaoto.namespace", kaoto.Namespace)
-			return ctrl.Result{}, err
-		} else {
-			log.Info("the role binding was created", "Kaoto.namespace", kaoto.Namespace, "kaoto.rolebinding", roleBinging.Name)
-		}
-
 	}
 
 	return ctrl.Result{}, nil

@@ -55,11 +55,8 @@ func CreateIntegratorClusterRole(kaoto kaotoiov1alpha1.Kaoto) *v12.ClusterRole {
 		Rules: []v12.PolicyRule{{
 			Verbs:     []string{"create", "delete", "update", "watch", "get", "list", "patch"},
 			APIGroups: []string{"camel.apache.org"},
-			Resources: []string{"kamelets", "kameletbindings"},
+			Resources: []string{"kamelets", "kameletbindings", "integrations"},
 		},
-			{Verbs: []string{"watch", "get", "list"},
-				APIGroups: []string{""},
-				Resources: []string{"pods"}},
 		},
 	}
 	return role
@@ -74,10 +71,10 @@ func CreateIntegratorRole(kaoto kaotoiov1alpha1.Kaoto) *v12.Role {
 			Verbs:     []string{"create", "delete", "update", "watch", "get", "list", "patch"},
 			APIGroups: []string{"camel.apache.org"},
 			Resources: []string{"kamelets", "kameletbindings"},
-		},
-			{Verbs: []string{"watch", "get", "list"},
-				APIGroups: []string{""},
-				Resources: []string{"pods"}},
+		}, {
+			Verbs:     []string{"watch", "get", "list"},
+			APIGroups: []string{""},
+			Resources: []string{"pods"}},
 		},
 	}
 

@@ -8,13 +8,16 @@ import (
 )
 
 func GetFrontEndDeployment(p KaotoParams, kaoto v1alpha1.Kaoto) *appsv1.Deployment {
-	return getDeployment(kaoto.Name, p.FrontendName, kaoto.Namespace, p.FrontendName, p.FrontendImg, p.FrontendPort)
+	image := kaoto.Spec.Frontend.Image
+	return getDeployment(kaoto.Name, p.FrontendName, kaoto.Namespace, p.FrontendName, image, p.FrontendPort, "default")
 }
 
 func GetBackendDeployment(p KaotoParams, kaoto v1alpha1.Kaoto) *appsv1.Deployment {
-	return getDeployment(kaoto.Name, p.BackendName, kaoto.Namespace, p.BackendName, p.BackendImg, p.BackendPort)
+	image := kaoto.Spec.Backend.Image
+	return getDeployment(kaoto.Name, p.BackendName, kaoto.Namespace, p.BackendName, image, p.BackendPort, "kaoto-operator-integrator-sa")
 }
-func getDeployment(kaotoName, name, namespace, imageName, image string, port int32) *appsv1.Deployment {
+
+func getDeployment(kaotoName, name, namespace, imageName, image string, port int32, saName string) *appsv1.Deployment {
 	labels := labelsForKaoto(name, kaotoName)
 	replicas := int32(1)
 	dep := &appsv1.Deployment{
@@ -32,6 +35,7 @@ func getDeployment(kaotoName, name, namespace, imageName, image string, port int
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
+					ServiceAccountName: saName,
 					Containers: []corev1.Container{{
 						Image: image,
 						Name:  imageName,
