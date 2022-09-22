@@ -9,7 +9,7 @@ import (
 
 func GetFrontEndDeployment(p KaotoParams, kaoto v1alpha1.Kaoto) *appsv1.Deployment {
 	image := kaoto.Spec.Frontend.Image
-	vars := []corev1.EnvVar{{}}
+	vars := []corev1.EnvVar{}
 	return getDeployment(kaoto.Name, p.FrontendName, kaoto.Namespace, p.FrontendName, image, p.FrontendPort, "default", vars)
 }
 
