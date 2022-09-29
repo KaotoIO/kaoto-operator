@@ -10,4 +10,3 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kaoto-operator-integrator-sa
-

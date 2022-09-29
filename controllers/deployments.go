@@ -9,15 +9,22 @@ import (
 
 func GetFrontEndDeployment(p KaotoParams, kaoto v1alpha1.Kaoto) *appsv1.Deployment {
 	image := kaoto.Spec.Frontend.Image
-	return getDeployment(kaoto.Name, p.FrontendName, kaoto.Namespace, p.FrontendName, image, p.FrontendPort, "default")
+	vars := []corev1.EnvVar{}
+	return getDeployment(kaoto.Name, p.FrontendName, kaoto.Namespace, p.FrontendName, image, p.FrontendPort, "default", vars)
 }
 
 func GetBackendDeployment(p KaotoParams, kaoto v1alpha1.Kaoto) *appsv1.Deployment {
 	image := kaoto.Spec.Backend.Image
-	return getDeployment(kaoto.Name, p.BackendName, kaoto.Namespace, p.BackendName, image, p.BackendPort, "kaoto-operator-integrator-sa")
+	vars := []corev1.EnvVar{{
+		Name:  "NAMESPACE",
+		Value: kaoto.Namespace,
+	}}
+
+	return getDeployment(kaoto.Name, p.BackendName, kaoto.Namespace, p.BackendName, image, p.BackendPort, "kaoto-operator-integrator-sa", vars)
 }
 
-func getDeployment(kaotoName, name, namespace, imageName, image string, port int32, saName string) *appsv1.Deployment {
+func getDeployment(kaotoName, name, namespace, imageName, image string, port int32, saName string, vars []corev1.EnvVar) *appsv1.Deployment {
+
 	labels := labelsForKaoto(name, kaotoName)
 	replicas := int32(1)
 	dep := &appsv1.Deployment{
@@ -39,6 +46,7 @@ func getDeployment(kaotoName, name, namespace, imageName, image string, port int
 					Containers: []corev1.Container{{
 						Image: image,
 						Name:  imageName,
+						Env:   vars,
 						Ports: []corev1.ContainerPort{{
 							ContainerPort: port,
 							Name:          "port",
