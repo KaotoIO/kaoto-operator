@@ -7,6 +7,11 @@ import (
 )
 
 func NewRoute(appName, routeName string, service v1.Service) *routev1.Route {
+	routeTLSConfig := &routev1.TLSConfig{
+		Termination:                   routev1.TLSTerminationEdge,
+		InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyRedirect,
+	}
+
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:    map[string]string{"app": appName},
@@ -21,6 +26,7 @@ func NewRoute(appName, routeName string, service v1.Service) *routev1.Route {
 			Port: &routev1.RoutePort{
 				TargetPort: service.Spec.Ports[0].TargetPort,
 			},
+			TLS: routeTLSConfig,
 		},
 	}
 }
