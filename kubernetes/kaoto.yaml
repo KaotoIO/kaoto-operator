@@ -56,6 +56,9 @@ spec:
             - name: port
               containerPort: 8081
               protocol: TCP
+          env:
+            - name: QUARKUS_HTTP_CORS_ORIGINS
+              value: /.*/
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           imagePullPolicy: Always
