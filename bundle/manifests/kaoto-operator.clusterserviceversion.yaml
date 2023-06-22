@@ -25,7 +25,7 @@ metadata:
     capabilities: Basic Install
     operators.operatorframework.io/builder: operator-sdk-v1.15.0+git
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: kaoto-operator.v0.0.3
+  name: kaoto-operator.v0.0.4
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -228,4 +228,4 @@ spec:
   provider:
     name: Kaoto.io
     url: https://kaoto.io
-  version: 0.0.3
+  version: 0.0.4
