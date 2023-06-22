@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -66,25 +67,6 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	// check the backend deployment
-
-	backendDep := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.BackendName, Namespace: kaoto.Namespace}, backendDep)
-	if err != nil && errors.IsNotFound(err) {
-		backendDep = GetBackendDeployment(r.KaotoParams, *kaoto)
-		_ = ctrl.SetControllerReference(kaoto, backendDep, r.Scheme)
-		err = r.Create(ctx, backendDep)
-
-		if err != nil {
-			log.Error(err, "failed to create Deployment for the backend", "Deployment.Namespace", backendDep.Namespace, "Deployment.Name", backendDep.Name)
-			return ctrl.Result{}, err
-		} else {
-			log.Info("the backend deployment was created", "Kaoto.Deployment.Backend", kaoto.Namespace, "Deployment.Name", backendDep.Name)
-		}
-	} else if err != nil {
-		return ctrl.Result{}, err
-	}
-
 	//check the frontend deployment
 	frontendDep := &appsv1.Deployment{}
 
@@ -102,7 +84,54 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	} else if err != nil {
 		return ctrl.Result{}, err
 	}
+	// frontEndService
+	frontendService := &v1.Service{}
+	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.FrontendName + "-svc", Namespace: kaoto.Namespace}, frontendService)
+	if err != nil && errors.IsNotFound(err) {
+		frontendService = NewService(kaoto.Name, r.KaotoParams.FrontendName, kaoto.Namespace, 80, r.KaotoParams.FrontendPort)
+		_ = ctrl.SetControllerReference(kaoto, frontendService, r.Scheme)
+		err = r.Create(ctx, frontendService)
+		if err != nil {
+			log.Error(err, "failed to create frontend service")
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the backend service "+frontendService.Name+"was created", "Kaoto.Service.Frontend", kaoto.Namespace)
+		}
+	}
+	// frontEndRoute
+	kaotoRoute := &routev1.Route{}
+	err = r.Get(ctx, types.NamespacedName{Name: kaoto.Name, Namespace: kaoto.Namespace}, kaotoRoute)
 
+	if err != nil && errors.IsNotFound(err) {
+		kaotoRoute = NewRoute(kaoto.Name, kaoto.Name, *frontendService)
+		_ = ctrl.SetControllerReference(kaoto, kaotoRoute, r.Scheme)
+		err = r.Create(ctx, kaotoRoute)
+		if err != nil {
+			log.Error(err, "failed to create Route")
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the kaoto route "+kaotoRoute.Name+"was created", "Kaoto.Route", kaoto.Namespace)
+		}
+	}
+
+	// check the backend deployment
+	backendDep := &appsv1.Deployment{}
+	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.BackendName, Namespace: kaoto.Namespace}, backendDep)
+	if err != nil && errors.IsNotFound(err) {
+		backendDep = GetBackendDeployment(r.KaotoParams, *kaoto, *kaotoRoute)
+		_ = ctrl.SetControllerReference(kaoto, backendDep, r.Scheme)
+		err = r.Create(ctx, backendDep)
+
+		if err != nil {
+			log.Error(err, "failed to create Deployment for the backend", "Deployment.Namespace", backendDep.Namespace, "Deployment.Name", backendDep.Name)
+			return ctrl.Result{}, err
+		} else {
+			log.Info("the backend deployment was created", "Kaoto.Deployment.Backend", kaoto.Namespace, "Deployment.Name", backendDep.Name)
+		}
+	} else if err != nil {
+		return ctrl.Result{}, err
+	}
+	// backEndService
 	backendService := &v1.Service{}
 	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.BackendName + "-svc", Namespace: kaoto.Namespace}, backendService)
 	if err != nil && errors.IsNotFound(err) {
@@ -118,35 +147,6 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 	log.Info("backend dep" + backendDep.Spec.Template.Spec.ServiceAccountName)
-	// frontEndService
-	frontendService := &v1.Service{}
-	err = r.Get(ctx, types.NamespacedName{Name: r.KaotoParams.FrontendName + "-svc", Namespace: kaoto.Namespace}, frontendService)
-	if err != nil && errors.IsNotFound(err) {
-		frontendService = NewService(kaoto.Name, r.KaotoParams.FrontendName, kaoto.Namespace, 80, r.KaotoParams.FrontendPort)
-		_ = ctrl.SetControllerReference(kaoto, frontendService, r.Scheme)
-		err = r.Create(ctx, frontendService)
-		if err != nil {
-			log.Error(err, "failed to create frontend service")
-			return ctrl.Result{}, err
-		} else {
-			log.Info("the backend service "+frontendService.Name+"was created", "Kaoto.Service.Frontend", kaoto.Namespace)
-		}
-	}
-
-	kaotoRoute := &routev1.Route{}
-	err = r.Get(ctx, types.NamespacedName{Name: kaoto.Name, Namespace: kaoto.Namespace}, kaotoRoute)
-
-	if err != nil && errors.IsNotFound(err) {
-		kaotoRoute = NewRoute(kaoto.Name, kaoto.Name, *frontendService)
-		_ = ctrl.SetControllerReference(kaoto, kaotoRoute, r.Scheme)
-		err = r.Create(ctx, kaotoRoute)
-		if err != nil {
-			log.Error(err, "failed to create Route")
-			return ctrl.Result{}, err
-		} else {
-			log.Info("the kaoto route "+kaotoRoute.Name+"was created", "Kaoto.Route", kaoto.Namespace)
-		}
-	}
 
 	return ctrl.Result{}, nil
 }
