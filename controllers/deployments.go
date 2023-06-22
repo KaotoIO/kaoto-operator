@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/kaotoIO/kaoto-operator/api/v1alpha1"
+	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,11 +14,14 @@ func GetFrontEndDeployment(p KaotoParams, kaoto v1alpha1.Kaoto) *appsv1.Deployme
 	return getDeployment(kaoto.Name, p.FrontendName, kaoto.Namespace, p.FrontendName, image, p.FrontendPort, "default", vars)
 }
 
-func GetBackendDeployment(p KaotoParams, kaoto v1alpha1.Kaoto) *appsv1.Deployment {
+func GetBackendDeployment(p KaotoParams, kaoto v1alpha1.Kaoto, kaotoRoute routev1.Route) *appsv1.Deployment {
 	image := kaoto.Spec.Backend.Image
 	vars := []corev1.EnvVar{{
 		Name:  "NAMESPACE",
 		Value: kaoto.Namespace,
+	}, {
+		Name:  "QUARKUS_HTTP_CORS_ORIGINS",
+		Value: "https://" + kaotoRoute.Spec.Host,
 	}}
 
 	return getDeployment(kaoto.Name, p.BackendName, kaoto.Namespace, p.BackendName, image, p.BackendPort, "kaoto-operator-integrator-sa", vars)
