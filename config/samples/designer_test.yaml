@@ -1,0 +1,13 @@
+apiVersion: designer.kaoto.io/v1alpha1
+kind: Kaoto
+metadata:
+  labels:
+    app.kubernetes.io/name: kaoto
+    app.kubernetes.io/instance: kaoto-sample
+    app.kubernetes.io/part-of: kaoto-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kaoto-operator
+  name: kaoto-test
+spec:
+  image: 'lordrip/kaoto-standalone:9'
+  ingress: {}

@@ -1,12 +1,20 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: leader-election-rolebinding
+  labels:
+    app.kubernetes.io/name: rolebinding
+    app.kubernetes.io/instance: kaoto-operator-leader-election-rolebinding
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: kaoto-operator
+    app.kubernetes.io/part-of: kaoto-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: kaoto-operator-leader-election
+  namespace: kaoto-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: leader-election-role
+  name: kaoto-operator-leader-election
 subjects:
 - kind: ServiceAccount
-  name: controller-manager
-  namespace: system
+  name: kaoto-operator
+  namespace: kaoto-system
