@@ -28,27 +28,47 @@ type KaotoSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Backend  KaotoBackend  `json:"backend,omitempty"`
-	Frontend KaotoFrontend `json:"frontend,omitempty"`
+	Backend  KaotoBackendSpec  `json:"backend,omitempty"`
+	Frontend KaotoFrontendSpec `json:"frontend,omitempty"`
 }
-type KaotoBackend struct {
-	Port  int32  `json:"port,omitempty"`
+type KaotoBackendSpec struct {
+	// +optional
+	// +kubebuilder:default:="kaoto-backend"
+	Name string `json:"name,omitempty"`
+
+	// +optional
+	// +kubebuilder:default:=8080
+	Port int32 `json:"port,omitempty"`
+
+	// +optional
+	// +kubebuilder:default:="quay.io/kaotoio/backend:nightly"
 	Image string `json:"image,omitempty"`
 }
 
-type KaotoFrontend struct {
-	Port  int32  `json:"port,omitempty"`
+type KaotoFrontendSpec struct {
+	// +optional
+	// +kubebuilder:default:="kaoto-frontend"
+	Name string `json:"name,omitempty"`
+
+	// +optional
+	// +kubebuilder:default:=8081
+	Port int32 `json:"port,omitempty"`
+
+	// +optional
+	// +kubebuilder:default:="quay.io/kaotoio/frontend:nightly"
 	Image string `json:"image,omitempty"`
 }
 
 // KaotoStatus defines the observed state of Kaoto
 type KaotoStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Phase              string             `json:"phase"`
+	Conditions         []metav1.Condition `json:"conditions,omitempty"`
+	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="The phase"
 
 // Kaoto is the Schema for the kaotoes API
 type Kaoto struct {
