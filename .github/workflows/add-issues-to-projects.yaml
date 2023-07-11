@@ -1,0 +1,35 @@
+name: ✨ Add epics to Roadmap ✨
+
+on:
+  issues:
+    types: [opened, labeled]
+env:
+  MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+jobs:        
+  assign_to_newcomers_list:
+    runs-on: ubuntu-latest
+    name: 🎯 Move to Newcomers List 🎯
+    steps:
+    - name: Assign issues with `good first issue` label to project 4
+      uses: srggrs/assign-one-project-github-action@1.3.1
+      if: contains(github.event.issue.labels.*.name, 'good first issue')
+      with:
+        project: 'https://github.com/orgs/KaotoIO/projects/4'
+        column_name: 'What To Do'
+    - name: Assign issues with `help wanted` label to project 4
+      uses: srggrs/assign-one-project-github-action@1.3.1
+      if: contains(github.event.issue.labels.*.name, 'help wanted')
+      with:
+        project: 'https://github.com/orgs/KaotoIO/projects/4'
+        column_name: 'What To Do'
+    
+        
+  assign_to_Kaoto_private:
+    runs-on: ubuntu-latest
+    name: 🎯 Move to Kaoto List 🎯
+    steps:
+      - uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/orgs/KaotoIO/projects/10
+          github-token: ${{ secrets.MY_GITHUB_TOKEN }}
