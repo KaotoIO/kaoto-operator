@@ -4,4 +4,4 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
-  name: kaotos.kaoto.io.kaoto.io
+  name: kaotoes.kaoto.io.kaoto.io
