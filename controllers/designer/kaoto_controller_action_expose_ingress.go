@@ -51,6 +51,29 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 		}
 	}
 
+	var in netv1.Ingress
+
+	err := rr.Get(ctx, rr.NamespacedName, &in)
+	if err != nil && !k8serrors.IsNotFound(err) {
+		ingressCondition.Status = metav1.ConditionFalse
+		ingressCondition.Reason = "Failure"
+		ingressCondition.Message = err.Error()
+	}
+	if err == nil {
+		if len(in.Status.LoadBalancer.Ingress) > 0 {
+			switch {
+			case in.Status.LoadBalancer.Ingress[0].Hostname != "":
+				rr.Kaoto.Status.Endpoint = "http://" + in.Status.LoadBalancer.Ingress[0].Hostname + "/" + rr.Kaoto.Name
+			case in.Status.LoadBalancer.Ingress[0].IP != "":
+				rr.Kaoto.Status.Endpoint = "http://" + in.Status.LoadBalancer.Ingress[0].IP + "/" + rr.Kaoto.Name
+			}
+		}
+
+		if !strings.HasSuffix(rr.Kaoto.Status.Endpoint, "/") {
+			rr.Kaoto.Status.Endpoint = rr.Kaoto.Status.Endpoint + "/"
+		}
+	}
+
 	meta.SetStatusCondition(&rr.Kaoto.Status.Conditions, ingressCondition)
 
 	return nil
@@ -71,6 +94,7 @@ func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) 
 				return resource, errors.New("unable to set controller reference")
 			}
 
+			// For now, assume the ingress is backed by nginx
 			resources.SetAnnotation(resource, "nginx.ingress.kubernetes.io/use-regex", "true")
 			resources.SetAnnotation(resource, "nginx.ingress.kubernetes.io/rewrite-target", "/$2")
 

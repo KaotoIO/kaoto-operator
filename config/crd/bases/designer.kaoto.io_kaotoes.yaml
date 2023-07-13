@@ -20,6 +20,10 @@ spec:
       jsonPath: .status.phase
       name: Phase
       type: string
+    - description: The endpoint
+      jsonPath: .status.endpoint
+      name: Endpoint
+      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -41,7 +45,7 @@ spec:
             description: KaotoSpec defines the desired state of Kaoto.
             properties:
               image:
-                default: docker.io/kaotoio/standalone:main
+                default: quay.io/kaotoio/standalone:main-jvm
                 type: string
               ingress:
                 properties:
@@ -122,6 +126,8 @@ spec:
                   - type
                   type: object
                 type: array
+              endpoint:
+                type: string
               observedGeneration:
                 format: int64
                 type: integer

@@ -124,6 +124,11 @@ build: manifests generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run main.go run --leader-election=false --zap-devel
 
+
+.PHONY: run/local
+run/local: manifests generate fmt vet install ## Install and Run a controller from your host.
+	go run main.go run --leader-election=false --zap-devel
+
 .PHONY: deps
 deps:  ## Tidy up deps.
 	go mod tidy

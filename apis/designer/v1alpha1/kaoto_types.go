@@ -23,7 +23,7 @@ import (
 // KaotoSpec defines the desired state of Kaoto.
 type KaotoSpec struct {
 	// +optional
-	// +kubebuilder:default:="docker.io/kaotoio/standalone:main"
+	// +kubebuilder:default:="quay.io/kaotoio/standalone:main-jvm"
 	Image string `json:"image,omitempty"`
 
 	// +optional
@@ -43,11 +43,13 @@ type KaotoStatus struct {
 	Phase              string             `json:"phase"`
 	Conditions         []metav1.Condition `json:"conditions,omitempty"`
 	ObservedGeneration int64              `json:"observedGeneration,omitempty"`
+	Endpoint           string             `json:"endpoint,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="The phase"
+// +kubebuilder:printcolumn:name="Endpoint",type=string,JSONPath=`.status.endpoint`,description="The endpoint"
 
 // Kaoto is the Schema for the kaotoes API.
 type Kaoto struct {

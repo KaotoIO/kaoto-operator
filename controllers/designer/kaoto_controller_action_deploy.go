@@ -3,6 +3,8 @@ package designer
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/util/intstr"
+
 	"github.com/kaotoIO/kaoto-operator/pkg/pointer"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -35,6 +37,13 @@ func (a *deployAction) Apply(ctx context.Context, rr *ReconciliationRequest) err
 
 	return err
 }
+
+const (
+	KaotoPort               int32  = 8081
+	KaotoPortType           string = "http"
+	KaotoLivenessProbePath  string = "/q/health/live"
+	KaotoReadinessProbePath string = "/q/health/ready"
+)
 
 func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) error {
 	return reify(
@@ -74,10 +83,38 @@ func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) er
 								},
 							}},
 							Ports: []corev1.ContainerPort{{
-								ContainerPort: 8081,
-								Name:          "http",
+								ContainerPort: KaotoPort,
+								Name:          KaotoPortType,
 							}},
 							ImagePullPolicy: "Always",
+							ReadinessProbe: &corev1.Probe{
+								InitialDelaySeconds: 1,
+								PeriodSeconds:       1,
+								FailureThreshold:    3,
+								SuccessThreshold:    1,
+								TimeoutSeconds:      10,
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path:   KaotoReadinessProbePath,
+										Port:   intstr.IntOrString{IntVal: KaotoPort},
+										Scheme: corev1.URISchemeHTTP,
+									},
+								},
+							},
+							LivenessProbe: &corev1.Probe{
+								InitialDelaySeconds: 1,
+								PeriodSeconds:       1,
+								FailureThreshold:    3,
+								SuccessThreshold:    1,
+								TimeoutSeconds:      10,
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path:   KaotoLivenessProbePath,
+										Port:   intstr.IntOrString{IntVal: KaotoPort},
+										Scheme: corev1.URISchemeHTTP,
+									},
+								},
+							},
 						}},
 					},
 				},

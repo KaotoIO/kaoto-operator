@@ -2,6 +2,7 @@ package designer
 
 import (
 	"context"
+	"strings"
 
 	"github.com/kaotoIO/kaoto-operator/pkg/resources"
 
@@ -50,6 +51,27 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 		}
 	}
 
+	var in routev1.Route
+
+	err := rr.Get(ctx, rr.NamespacedName, &in)
+	if err != nil && !k8serrors.IsNotFound(err) {
+		ingressCondition.Status = metav1.ConditionFalse
+		ingressCondition.Reason = "Failure"
+		ingressCondition.Message = err.Error()
+	}
+	if err == nil {
+		if len(in.Status.Ingress) > 0 {
+			switch {
+			case in.Status.Ingress[0].Host != "":
+				rr.Kaoto.Status.Endpoint = "https://" + in.Status.Ingress[0].Host + in.Spec.Path
+			}
+		}
+
+		if !strings.HasSuffix(rr.Kaoto.Status.Endpoint, "/") {
+			rr.Kaoto.Status.Endpoint = rr.Kaoto.Status.Endpoint + "/"
+		}
+	}
+
 	meta.SetStatusCondition(&rr.Kaoto.Status.Conditions, ingressCondition)
 
 	return nil
@@ -70,8 +92,6 @@ func (a *routeAction) route(ctx context.Context, rr *ReconciliationRequest) erro
 				return resource, errors.New("unable to set controller reference")
 			}
 
-			resources.SetAnnotation(resource, "haproxy.router.openshift.io/rewrite-target", "/")
-
 			resource.Spec = routev1.RouteSpec{
 				To: routev1.RouteTargetReference{
 					Kind: "Service",
@@ -87,13 +107,14 @@ func (a *routeAction) route(ctx context.Context, rr *ReconciliationRequest) erro
 			}
 
 			host := ""
-			path := "/" + rr.Kaoto.Name
+			path := "/"
 
 			if rr.Kaoto.Spec.Ingress.Host != "" {
 				host = rr.Kaoto.Spec.Ingress.Host
 			}
 			if rr.Kaoto.Spec.Ingress.Path != "" {
 				path = rr.Kaoto.Spec.Ingress.Path
+				resources.SetAnnotation(resource, "haproxy.router.openshift.io/rewrite-target", "/")
 			}
 
 			resource.Spec.Host = host

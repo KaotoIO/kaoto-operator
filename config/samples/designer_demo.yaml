@@ -9,5 +9,4 @@ metadata:
     app.kubernetes.io/created-by: kaoto-operator
   name: kaoto-demo
 spec:
-  image: 'lordrip/kaoto-standalone:9'
   ingress: {}
