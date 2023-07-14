@@ -2,6 +2,7 @@ package designer
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/kaotoIO/kaoto-operator/pkg/resources"
@@ -53,13 +54,13 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 
 	var in netv1.Ingress
 
-	err := rr.Get(ctx, rr.NamespacedName, &in)
-	if err != nil && !k8serrors.IsNotFound(err) {
+	if err := rr.Get(ctx, rr.NamespacedName, &in); err != nil && !k8serrors.IsNotFound(err) {
 		ingressCondition.Status = metav1.ConditionFalse
 		ingressCondition.Reason = "Failure"
 		ingressCondition.Message = err.Error()
-	}
-	if err == nil {
+	} else {
+		rr.Kaoto.Status.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local/", rr.Kaoto.Name, rr.Kaoto.Namespace)
+
 		if len(in.Status.LoadBalancer.Ingress) > 0 {
 			switch {
 			case in.Status.LoadBalancer.Ingress[0].Hostname != "":
