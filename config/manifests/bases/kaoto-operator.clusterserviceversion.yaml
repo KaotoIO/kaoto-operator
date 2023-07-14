@@ -10,10 +10,10 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Kaoto is the Schema for the kaotoes API
+    - description: Kaoto is the Schema for the kaotoes API.
       displayName: Kaoto
       kind: Kaoto
-      name: kaotos.kaoto.io
+      name: kaotoes.designer.kaoto.io
       version: v1alpha1
   description: Kaoto is a low code and no code integration designer to edit and deploy
     based on Apache Camel . It is designed to be extendable and flexible and adaptable
@@ -27,13 +27,13 @@ spec:
       deployments: null
     strategy: ""
   installModes:
-  - supported: true
+  - supported: false
     type: OwnNamespace
   - supported: false
     type: SingleNamespace
   - supported: false
     type: MultiNamespace
-  - supported: false
+  - supported: true
     type: AllNamespaces
   keywords:
   - integration
@@ -42,9 +42,12 @@ spec:
   - designer
   links:
   - name: Kaoto Operator
-    url: https://kaoto.io
+    url: https://kaoto-operator.domain
+  maintainers:
+  - email: info@kaoto.io
+    name: kaoto
   maturity: alpha
   provider:
-    name: Kaoto.io
+    name: kaoto.io
     url: https://kaoto.io
   version: 0.0.0

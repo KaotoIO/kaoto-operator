@@ -3,39 +3,62 @@ kind: Namespace
 metadata:
   labels:
     control-plane: controller-manager
-  name: system
+    app.kubernetes.io/name: namespace
+    app.kubernetes.io/instance: system
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/created-by: kaoto-operator
+    app.kubernetes.io/part-of: kaoto-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: kaoto-system
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
-  namespace: system
+  name: kaoto-operator
+  namespace: kaoto-system
   labels:
     control-plane: controller-manager
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/instance: controller-manager
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/created-by: kaoto-operator
+    app.kubernetes.io/part-of: kaoto-operator
+    app.kubernetes.io/managed-by: kustomize
 spec:
   selector:
     matchLabels:
-      control-plane: controller-manager
+      control-plane: kaoto-operator
   replicas: 1
   template:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        control-plane: controller-manager
+        control-plane: kaoto-operator
     spec:
       securityContext:
         runAsNonRoot: true
+        # TODO(user): For common cases that do not require escalating privileges
+        # it is recommended to ensure that all your Pods/Containers are restrictive.
+        # More info: https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted
+        # Please uncomment the following code if your project does NOT have to work on old Kubernetes
+        # versions < 1.19 or on vendors versions which do NOT support this field by default (i.e. Openshift < 4.11 ).
+        # seccompProfile:
+        #   type: RuntimeDefault
       containers:
       - command:
-        - /manager
+        - /kaoto
         args:
-        - --leader-elect
-        imagePullPolicy: Always
+        - run
+        - --leader-election
         image: controller:latest
+        imagePullPolicy: Always
         name: manager
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - "ALL"
         livenessProbe:
           httpGet:
             path: /healthz
@@ -57,10 +80,5 @@ spec:
           requests:
             cpu: 10m
             memory: 64Mi
-        env:
-          - name: WATCH_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-      serviceAccountName: controller-manager
+      serviceAccountName: kaoto-operator
       terminationGracePeriodSeconds: 10
