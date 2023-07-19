@@ -10,6 +10,10 @@ concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
+env:
+  VERSION: "${{ github.ref_name }}-${{ github.sha }}"
+  IMG_VERSION: "${{ github.ref_name }}-${{ github.sha }}"
+
 jobs:
   build:
     runs-on: ubuntu-latest
