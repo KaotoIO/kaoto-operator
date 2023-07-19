@@ -13,7 +13,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      output1: ${{ steps.step-version.outputs.version }}
+      version: ${{ steps.set-version.outputs.version }}
     steps:
       - name: "Set Version"
         id: "set-version"
