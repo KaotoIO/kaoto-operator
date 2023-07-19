@@ -16,7 +16,7 @@ jobs:
       output1: ${{ steps.step-version.outputs.version }}
     steps:
       - name: "Set Version"
-        ud: "set-version"
+        id: "set-version"
         run: |
           export C_VERSION="${GITHUB_REF_NAME#v}"
 
