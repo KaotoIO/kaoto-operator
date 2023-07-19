@@ -1,0 +1,33 @@
+name: Build Tag
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:  
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.step-version.outputs.version }}
+    steps:
+      - name: "Set Version"
+        ud: "set-version"
+        run: |
+          export C_VERSION="${GITHUB_REF_NAME#v}"
+
+          echo "version=${C_VERSION}" >> "$GITHUB_OUTPUT"
+  build:
+    uses: ./.github/workflows/build-and-push.yaml
+    needs:
+      - setup
+    with:
+      version: "${{ needs.setup.outputs.version }}"
+    secrets:
+      registr: "quay.io"
+      resitry-username: ${{ secrets.QUAY_USERNAME }}
+      resitry-password: ${{ secrets.QUAY_PASSWORD }}
