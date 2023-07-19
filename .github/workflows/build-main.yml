@@ -15,6 +15,7 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       version: "${{ github.ref_name }}-${{ github.sha }}"
+      olm: false
     secrets:
       registry: "quay.io"
       registry-username: ${{ secrets.QUAY_USERNAME }}
