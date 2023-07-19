@@ -28,6 +28,6 @@ jobs:
     with:
       version: "${{ needs.setup.outputs.version }}"
     secrets:
-      registr: "quay.io"
-      resitry-username: ${{ secrets.QUAY_USERNAME }}
-      resitry-password: ${{ secrets.QUAY_PASSWORD }}
+      registry: "quay.io"
+      registry-username: ${{ secrets.QUAY_USERNAME }}
+      registry-password: ${{ secrets.QUAY_PASSWORD }}
