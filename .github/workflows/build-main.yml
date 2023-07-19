@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-and-push.yaml
+    uses: ./.github/workflows/build-and-push.yml
     with:
       version: "${{ github.ref_name }}-${{ github.sha }}"
     secrets:

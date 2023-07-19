@@ -22,7 +22,7 @@ jobs:
 
           echo "version=${C_VERSION}" >> "$GITHUB_OUTPUT"
   build:
-    uses: ./.github/workflows/build-and-push.yaml
+    uses: ./.github/workflows/build-and-push.yml
     needs:
       - setup
     with:
