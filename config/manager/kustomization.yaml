@@ -9,4 +9,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/kaotoio/kaoto-operator
-  newTag: latest
+  newTag: 0.0.6

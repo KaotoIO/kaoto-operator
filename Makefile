@@ -218,6 +218,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GL ?= $(LOCALBIN)/golangci-lint
 GOIMPORT ?= $(LOCALBIN)/goimports
+YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
@@ -274,11 +275,21 @@ $(GOIMPORT): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install golang.org/x/tools/cmd/goimports@latest
 
 
+.PHONY: yq
+yq: $(YQ)
+$(YQ): $(LOCALBIN)
+	@test -s $(LOCALBIN)/yq || \
+	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@latest
+
+
+
 .PHONY: bundle
-bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
+bundle: manifests kustomize operator-sdk yq ## Generate bundle manifests and metadata, then validate generated files.
 	$(OPERATOR_SDK) generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle --extra-service-accounts kaoto-backend $(BUNDLE_GEN_FLAGS)
+	$(YQ) -i '.spec.customresourcedefinitions.owned[0].name = "kaotoes.designer.kaoto.io"' bundle/manifests/kaoto-operator.clusterserviceversion.yaml
+	$(YQ) -i '.metadata.annotations.containerImage = .spec.install.spec.deployments[0].spec.template.spec.containers[0].image' bundle/manifests/kaoto-operator.clusterserviceversion.yaml
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-build
