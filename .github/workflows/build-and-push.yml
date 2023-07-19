@@ -6,6 +6,9 @@ on:
       version:
         required: true
         type: string
+      olm:
+        required: true
+        type: boolean
     secrets:
       registry:
         required: true
@@ -52,24 +55,15 @@ jobs:
 
           echo "VERSION=${C_VERSION}" >> $GITHUB_ENV
           echo "IMG_VERSION=${C_VERSION}" >> $GITHUB_ENV
-      - name: "Build the Container image"
+      - name: "Build Container image"
         run: |
           make docker-build
-      - name: "Push the Container image"
-        run: |
           make docker-push
-      - name: "Build the OLM bundle"
+      - name: "Build OLM bundle"
+        if: ${{ inputs.olm }}
         run: |
           make bundle
-      - name: "Build the OLM bundle image"
-        run: |
           make bundle-build
-      - name: "Push the OLM bundle image"
-        run: |
           make bundle-push
-      - name: "Make the catalog image"
-        run: |
           make catalog-build
-      - name: "Push the catalog image"
-        run: |
           make catalog-push

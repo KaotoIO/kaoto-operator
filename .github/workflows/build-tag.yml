@@ -27,6 +27,7 @@ jobs:
       - setup
     with:
       version: "${{ needs.setup.outputs.version }}"
+      olm: true
     secrets:
       registry: "quay.io"
       registry-username: ${{ secrets.QUAY_USERNAME }}
