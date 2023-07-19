@@ -4,6 +4,9 @@ metadata:
   annotations:
     alm-examples: '[]'
     capabilities: Basic Install
+    categories: Developer Tools, Integration & Delivery
+    certified: "false"
+    containerImage: ""
   name: kaoto-operator.v0.0.0
   namespace: placeholder
 spec:
@@ -13,7 +16,7 @@ spec:
     - description: Kaoto is the Schema for the kaotoes API.
       displayName: Kaoto
       kind: Kaoto
-      name: kaotoes.designer.kaoto.io
+      name: kaotos.designer.kaoto.io
       version: v1alpha1
   description: Kaoto is a low code and no code integration designer to edit and deploy
     based on Apache Camel . It is designed to be extendable and flexible and adaptable
@@ -47,6 +50,7 @@ spec:
   - email: info@kaoto.io
     name: kaoto
   maturity: alpha
+  minKubeVersion: 1.22.0
   provider:
     name: kaoto.io
     url: https://kaoto.io
