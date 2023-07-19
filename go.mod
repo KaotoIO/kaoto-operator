@@ -9,7 +9,7 @@ require (
 	github.com/openshift/api v0.0.0-20220523152556-4e43481ff9d3
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.4
 	go.uber.org/multierr v1.6.0
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
