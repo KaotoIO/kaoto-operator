@@ -20,27 +20,25 @@ import (
 	"context"
 	"sort"
 
+	"github.com/kaotoIO/kaoto-operator/config/client"
+
 	rbacv1 "k8s.io/api/rbac/v1"
 
 	"go.uber.org/multierr"
 
 	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/openshift"
 	routev1 "github.com/openshift/api/route/v1"
-	netv1 "k8s.io/api/networking/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/discovery"
-
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -51,18 +49,17 @@ import (
 )
 
 func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
-	dc, err := discovery.NewDiscoveryClientForConfig(manager.GetConfig())
+	c, err := client.NewClient(manager.GetConfig(), manager.GetScheme(), manager.GetClient())
 	if err != nil {
 		return nil, err
 	}
 
 	rec := KaotoReconciler{}
-	rec.Client = manager.GetClient()
+	rec.Client = c
 	rec.Scheme = manager.GetScheme()
-	rec.Discovery = dc
 	rec.ClusterType = ClusterTypeVanilla
 
-	isOpenshift, err := openshift.IsOpenShift(dc)
+	isOpenshift, err := c.IsOpenShift()
 	if err != nil {
 		return nil, err
 	}
@@ -86,9 +83,8 @@ func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
 }
 
 type KaotoReconciler struct {
-	client.Client
+	*client.Client
 
-	Discovery   *discovery.DiscoveryClient
 	Scheme      *runtime.Scheme
 	ClusterType ClusterType
 	actions     []Action

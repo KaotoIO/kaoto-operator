@@ -17,44 +17,8 @@ limitations under the License.
 package designer
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/kaotoIO/kaoto-operator/pkg/resources"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
-
-func reify[T ctrl.Object](
-	ctx context.Context,
-	rr *ReconciliationRequest,
-	obj T,
-	action func(T) (T, error)) error {
-
-	gvk, err := apiutil.GVKForObject(obj, rr.Scheme())
-	if err != nil {
-		return err
-	}
-
-	obj.GetObjectKind().SetGroupVersionKind(gvk)
-
-	target, err := action(obj)
-	if err != nil {
-		return err
-	}
-
-	resources.SetLabels(obj, Labels(obj))
-
-	if err := resources.Apply(ctx, rr.Client, target); err != nil {
-		return fmt.Errorf(
-			"unable to patch resource (namespace: %s, name: %s): %s",
-			obj.GetNamespace(),
-			obj.GetName(),
-			err.Error())
-	}
-
-	return nil
-}
 
 func Labels(ref ctrl.Object) map[string]string {
 	return map[string]string{

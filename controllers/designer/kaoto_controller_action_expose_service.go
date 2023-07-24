@@ -3,13 +3,15 @@ package designer
 import (
 	"context"
 
+	"github.com/kaotoIO/kaoto-operator/config/apply"
+
+	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
+
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type serviceAction struct {
@@ -39,35 +41,27 @@ func (a *serviceAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 }
 
 func (a *serviceAction) service(ctx context.Context, rr *ReconciliationRequest) error {
-	return reify(
+	service := corev1ac.Service(rr.Kaoto.Name, rr.Kaoto.Namespace).
+		WithOwnerReferences(apply.WithOwnerReference(rr.Kaoto)).
+		WithLabels(Labels(rr.Kaoto)).
+		WithSpec(corev1ac.ServiceSpec().
+			WithPorts(corev1ac.ServicePort().
+				WithName(KaotoPortType).
+				WithProtocol(corev1.ProtocolTCP).
+				WithPort(KaotoPort).
+				WithTargetPort(intstr.FromString(KaotoPortType))).
+			WithSelector(LabelsForSelector(rr.Kaoto)).
+			WithSessionAffinity(corev1.ServiceAffinityNone).
+			WithPublishNotReadyAddresses(true))
+
+	_, err := rr.Client.CoreV1().Services(rr.Kaoto.Namespace).Apply(
 		ctx,
-		rr,
-		&corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      rr.Kaoto.Name,
-				Namespace: rr.Kaoto.Namespace,
-			},
-		},
-		func(resource *corev1.Service) (*corev1.Service, error) {
-			if err := controllerutil.SetControllerReference(rr.Kaoto, resource, rr.Scheme()); err != nil {
-				return resource, errors.New("unable to set controller reference")
-			}
-
-			resource.Spec = corev1.ServiceSpec{
-				Ports: []corev1.ServicePort{
-					{
-						Name:       "http",
-						Protocol:   "TCP",
-						Port:       80,
-						TargetPort: intstr.FromInt(8081),
-					},
-				},
-				Selector:                 LabelsForSelector(rr.Kaoto),
-				SessionAffinity:          "None",
-				PublishNotReadyAddresses: true,
-			}
-
-			return resource, nil
+		service,
+		metav1.ApplyOptions{
+			FieldManager: KaotoOperatorFieldManager,
+			Force:        true,
 		},
 	)
+
+	return err
 }
