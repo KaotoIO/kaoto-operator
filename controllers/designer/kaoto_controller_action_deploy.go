@@ -2,6 +2,12 @@ package designer
 
 import (
 	"context"
+	"strings"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
+
+	routev1 "github.com/openshift/api/route/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -60,6 +66,11 @@ func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) er
 				return resource, errors.New("unable to set controller reference")
 			}
 
+			image := rr.Kaoto.Spec.Image
+			if image == "" {
+				image = defaults.KaotoStandaloneImage
+			}
+
 			resource.Spec = appsv1.DeploymentSpec{
 				Replicas: pointer.Any(int32(1)),
 				Selector: &metav1.LabelSelector{
@@ -72,7 +83,7 @@ func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) er
 					Spec: corev1.PodSpec{
 						ServiceAccountName: rr.Kaoto.Name,
 						Containers: []corev1.Container{{
-							Image: rr.Kaoto.Spec.Image,
+							Image: image,
 							Name:  "standalone",
 							Env: []corev1.EnvVar{{
 								Name: "NAMESPACE",
@@ -118,6 +129,42 @@ func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) er
 						}},
 					},
 				},
+			}
+
+			// it appears that even with the standalone mode, there are some CORS issues that prevent some endpoint
+			// to be invoked, the QUARKUS_HTTP_CORS_ORIGINS env must be set.
+			//
+			// TODO: investigate why this is needed
+
+			if rr.Kaoto.Spec.Ingress != nil {
+				switch {
+				case rr.Kaoto.Spec.Ingress.Host != "":
+					// use the provided host if configured so no further lookup would be needed
+					resource.Spec.Template.Spec.Containers[0].Env = append(resource.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+						Name:  "QUARKUS_HTTP_CORS_ORIGINS",
+						Value: rr.Kaoto.Spec.Ingress.Host,
+					})
+				case rr.ClusterType == ClusterTypeOpenShift:
+					// in case of OpenShift se can leverage the Route.Spec.Host to retrieve the
+					// right value for the QUARKUS_HTTP_CORS_ORIGINS
+					var in routev1.Route
+
+					err := rr.Get(ctx, rr.NamespacedName, &in)
+					if err != nil && !k8serrors.IsNotFound(err) {
+						return resource, err
+					}
+
+					if in.Spec.Host != "" {
+						host := in.Spec.Host
+						if !strings.HasPrefix(host, "https://") {
+							host = "https://" + host
+						}
+						resource.Spec.Template.Spec.Containers[0].Env = append(resource.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+							Name:  "QUARKUS_HTTP_CORS_ORIGINS",
+							Value: host,
+						})
+					}
+				}
 			}
 
 			return resource, nil

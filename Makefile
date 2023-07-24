@@ -59,6 +59,9 @@ IMG ?= ${IMAGE_TAG_BASE}:${IMG_VERSION}
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.26.0
 
+# Kaoto image that is installed by the operator
+KAOTO_STANDALONE_IMAGE ?= quay.io/kaotoio/standalone:main-jvm
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -66,6 +69,7 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+GOLDFLAGS = -X 'github.com/kaotoIO/kaoto-operator/pkg/defaults.KaotoStandaloneImage=${KAOTO_STANDALONE_IMAGE}'
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
@@ -118,16 +122,15 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
-	go build -o bin/kaoto main.go
+	go build -ldflags="$(GOLDFLAGS)" -o bin/kaoto main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run main.go run --leader-election=false --zap-devel
+	go run -ldflags="$(GOLDFLAGS)" main.go run --leader-election=false --zap-devel
 
 
 .PHONY: run/local
-run/local: manifests generate fmt vet install ## Install and Run a controller from your host.
-	go run main.go run --leader-election=false --zap-devel
+run/local: manifests generate fmt vet install run ## Install and Run a controller from your host.
 
 .PHONY: deps
 deps:  ## Tidy up deps.
