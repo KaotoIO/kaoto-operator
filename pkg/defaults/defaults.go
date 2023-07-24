@@ -8,3 +8,7 @@ const (
 	ConflictInterval   = 1 * time.Second
 	KaotoFinalizerName = "kaoto.io/finalizer"
 )
+
+var (
+	KaotoStandaloneImage = "quay.io/kaotoio/standalone:main-jvm"
+)

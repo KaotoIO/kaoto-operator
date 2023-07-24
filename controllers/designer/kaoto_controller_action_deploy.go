@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
+
 	routev1 "github.com/openshift/api/route/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -64,6 +66,11 @@ func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) er
 				return resource, errors.New("unable to set controller reference")
 			}
 
+			image := rr.Kaoto.Spec.Image
+			if image == "" {
+				image = defaults.KaotoStandaloneImage
+			}
+
 			resource.Spec = appsv1.DeploymentSpec{
 				Replicas: pointer.Any(int32(1)),
 				Selector: &metav1.LabelSelector{
@@ -76,7 +83,7 @@ func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) er
 					Spec: corev1.PodSpec{
 						ServiceAccountName: rr.Kaoto.Name,
 						Containers: []corev1.Container{{
-							Image: rr.Kaoto.Spec.Image,
+							Image: image,
 							Name:  "standalone",
 							Env: []corev1.EnvVar{{
 								Name: "NAMESPACE",

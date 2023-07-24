@@ -23,7 +23,6 @@ import (
 // KaotoSpec defines the desired state of Kaoto.
 type KaotoSpec struct {
 	// +optional
-	// +kubebuilder:default:="quay.io/kaotoio/standalone:main-jvm"
 	Image string `json:"image,omitempty"`
 
 	// +optional
