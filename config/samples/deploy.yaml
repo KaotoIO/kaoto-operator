@@ -1,91 +1,138 @@
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: serviceaccount
+    app.kubernetes.io/instance: kaoto-standalone
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: kaoto-operator
+    app.kubernetes.io/part-of: kaoto-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: kaoto-standalone
+  namespace: kaoto
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: kaoto-standalone
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: kaoto-team
+    app.kubernetes.io/part-of: kaoto
+    app.kubernetes.io/managed-by: kustomize
+  name: kaoto-camel-k
+rules:
+  - apiGroups:
+      - camel.apache.org
+    resources:
+      - kameletbindings
+      - integrations
+      - kamelets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/log
+    verbs:
+      - get
+      - watch
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrolebinding
+    app.kubernetes.io/instance: kaoto-standalone
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: kaoto-team
+    app.kubernetes.io/part-of: kaoto
+    app.kubernetes.io/managed-by: kustomize
+  name: kaoto-standalone
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kaoto-camel-k
+subjects:
+  - kind: ServiceAccount
+    name: kaoto-standalone
+    namespace: kaoto
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: designer
-    app.kubernetes.io/instance: kaoto-sample
-    app.kubernetes.io/managed-by: kaoto-operator
+    app.kubernetes.io/instance: kaoto-standalone
+    app.kubernetes.io/managed-by: kaoto-team
     app.kubernetes.io/name: kaoto
     app.kubernetes.io/part-of: kaoto
-  name: kaoto-sample
+  name: kaoto
+  namespace: kaoto
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: designer
-      app.kubernetes.io/instance: kaoto-sample
-      app.kubernetes.io/managed-by: kaoto-operator
+      app.kubernetes.io/instance: kaoto-standalone
+      app.kubernetes.io/managed-by: kaoto-team
       app.kubernetes.io/name: kaoto
       app.kubernetes.io/part-of: kaoto
   template:
     metadata:
       labels:
         app.kubernetes.io/component: designer
-        app.kubernetes.io/instance: kaoto-sample
-        app.kubernetes.io/managed-by: kaoto-operator
+        app.kubernetes.io/instance: kaoto-standalone
+        app.kubernetes.io/managed-by: kaoto-team
         app.kubernetes.io/name: kaoto
         app.kubernetes.io/part-of: kaoto
     spec:
+      serviceAccountName: kaoto-standalone
       containers:
-      - env:
-          - name: NAMESPACE
-            valueFrom:
-              fieldRef:
-                apiVersion: v1
-                fieldPath: metadata.namespace
-          - name: QUARKUS_LOG_LEVEL
-            value: DEBUG
-        image: 'quay.io/kaotoio/standalone:main-jvm'
-        imagePullPolicy: Always
-        name: standalone
-        ports:
-          - containerPort: 8081
-            name: http
-            protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/component: designer
-    app.kubernetes.io/instance: kaoto-sample
-    app.kubernetes.io/managed-by: kaoto-operator
-    app.kubernetes.io/name: kaoto
-    app.kubernetes.io/part-of: kaoto
-  name: kaoto-sample
-spec:
-  ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      targetPort: 8081
-  selector:
-    app.kubernetes.io/instance: kaoto-sample
-    app.kubernetes.io/name: kaoto
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
-  labels:
-    app.kubernetes.io/component: designer
-    app.kubernetes.io/instance: kaoto-sample
-    app.kubernetes.io/managed-by: kaoto-operator
-    app.kubernetes.io/name: kaoto
-    app.kubernetes.io/part-of: kaoto
-  name: kaoto-sample
-spec:
-  ingressClassName: nginx
-  rules:
-    - http:
-        paths:
-          - backend:
-              service:
-                name: kaoto-sample
-                port:
-                  name: http
-            path: /kaoto-sample(/|$)(.*)
-            pathType: Prefix
+        - env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+          image: 'kaotoio/standalone:main-jvm'
+          imagePullPolicy: Always
+          name: standalone
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /q/health/live
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 1
+            successThreshold: 1
+            timeoutSeconds: 10
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /q/health/ready
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 1
+            successThreshold: 1
+            timeoutSeconds: 10
+          ports:
+            - containerPort: 8081
+              name: http
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "600Mi"
