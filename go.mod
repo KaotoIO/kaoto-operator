@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.11.0
-	github.com/onsi/gomega v1.27.9
+	github.com/onsi/gomega v1.27.10
 	github.com/openshift/api v0.0.0-20220523152556-4e43481ff9d3
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
