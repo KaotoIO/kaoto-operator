@@ -3,7 +3,7 @@ kind: Kaoto
 metadata:
   labels:
     app.kubernetes.io/name: kaoto
-    app.kubernetes.io/instance: kaoto-sample
+    app.kubernetes.io/instance: kaoto-demo
     app.kubernetes.io/part-of: kaoto-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: kaoto-operator

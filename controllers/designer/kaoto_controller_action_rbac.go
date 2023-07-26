@@ -86,6 +86,7 @@ func (a *rbacAction) serviceAccount(ctx context.Context, rr *ReconciliationReque
 
 func (a *rbacAction) binding(ctx context.Context, rr *ReconciliationRequest) error {
 	resource := rbacv1ac.ClusterRoleBinding(rr.Kaoto.Name).
+		WithLabels(Labels(rr.Kaoto)).
 		WithSubjects(rbacv1ac.Subject().
 			WithKind(rbacv1.ServiceAccountKind).
 			WithNamespace(rr.Kaoto.Namespace).

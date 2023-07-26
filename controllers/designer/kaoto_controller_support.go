@@ -22,17 +22,17 @@ import (
 
 func Labels(ref ctrl.Object) map[string]string {
 	return map[string]string{
-		"app.kubernetes.io/name":       "kaoto",
-		"app.kubernetes.io/instance":   ref.GetName(),
-		"app.kubernetes.io/component":  "designer",
-		"app.kubernetes.io/part-of":    "kaoto",
-		"app.kubernetes.io/managed-by": "kaoto-operator",
+		KubernetesLabelAppName:      KaotoAppName,
+		KubernetesLabelAppInstance:  ref.GetName(),
+		KubernetesLabelAppComponent: "designer",
+		KubernetesLabelAppPartOf:    KaotoAppName,
+		KubernetesLabelAppManagedBy: KaotoOperatorFieldManager,
 	}
 }
 
 func LabelsForSelector(ref ctrl.Object) map[string]string {
 	return map[string]string{
-		"app.kubernetes.io/name":     "kaoto",
-		"app.kubernetes.io/instance": ref.GetName(),
+		KubernetesLabelAppName:     KaotoAppName,
+		KubernetesLabelAppInstance: ref.GetName(),
 	}
 }

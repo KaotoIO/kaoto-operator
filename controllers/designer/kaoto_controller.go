@@ -18,7 +18,14 @@ package designer
 
 import (
 	"context"
+	"fmt"
 	"sort"
+
+	"github.com/go-logr/logr"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/pointer"
 
 	"github.com/kaotoIO/kaoto-operator/config/client"
 
@@ -39,6 +46,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	ctrlcl "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -78,6 +86,7 @@ func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
 	}
 
 	rec.actions = append(rec.actions, &deployAction{})
+	rec.l = ctrl.Log.WithName("controller")
 
 	return &rec, nil
 }
@@ -88,6 +97,7 @@ type KaotoReconciler struct {
 	Scheme      *runtime.Scheme
 	ClusterType ClusterType
 	actions     []Action
+	l           logr.Logger
 }
 
 // +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes,verbs=get;list;watch;create;update;patch;delete
@@ -125,10 +135,44 @@ func (r *KaotoReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		predicate.Or(
 			predicate.ResourceVersionChangedPredicate{},
 		)))
-	c = c.Owns(&rbacv1.ClusterRoleBinding{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
+	c = c.Watches(&rbacv1.ClusterRoleBinding{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, object ctrlcl.Object) []reconcile.Request {
+		crb, ok := object.(*rbacv1.ClusterRoleBinding)
+		if !ok {
+			r.l.Error(fmt.Errorf("type assertion failed: %v", object), "failed to retrieve ClusterRoleBinding")
+			return nil
+		}
+
+		if crb.Labels != nil && crb.Labels[KubernetesLabelAppManagedBy] == KaotoOperatorFieldManager {
+			list := &kaotoiov1alpha1.KaotoList{}
+
+			if err := r.List(ctx, list); err != nil {
+				r.l.Error(err, "failed to retrieve KaotoList list")
+				return nil
+			}
+
+			requests := make([]reconcile.Request, 0)
+			for i := range list.Items {
+				if !list.Items[i].ObjectMeta.DeletionTimestamp.IsZero() {
+					continue
+				}
+				if crb.Labels[KubernetesLabelAppInstance] != list.Items[i].Name {
+					continue
+				}
+
+				requests = append(requests, reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name:      list.Items[i].Name,
+						Namespace: list.Items[i].Namespace,
+					},
+				})
+			}
+
+			return requests
+		}
+
+		return nil
+
+	}))
 
 	switch r.ClusterType {
 	case ClusterTypeVanilla:
@@ -190,7 +234,20 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	} else {
 
 		//
-		// Handle deletion
+		// Some resources cannot be garbage collected and automatically removed using ownership as i.e. they
+		// are cluster scoped such as a ClusterRoleBinding hence must be deleted
+		//
+
+		err := rr.Client.RbacV1().ClusterRoleBindings().Delete(ctx, rr.Kaoto.Name, metav1.DeleteOptions{
+			PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
+		})
+
+		if err != nil && !k8serrors.IsNotFound(err) {
+			return ctrl.Result{}, errors.Wrapf(err, "failure removing ClusterRoleBindings %s", rr.Kaoto.Name)
+		}
+
+		//
+		// Handle finalizer
 		//
 
 		if controllerutil.RemoveFinalizer(rr.Kaoto, defaults.KaotoFinalizerName) {

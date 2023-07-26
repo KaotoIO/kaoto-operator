@@ -23,6 +23,8 @@ const (
 	ClusterTypeOpenShift ClusterType = "OpenShift"
 
 	K
+
+	KaotoAppName                   string = "kaoto"
 	KaotoStandaloneName            string = "kaoto-standalone"
 	KaotoOperatorFieldManager      string = "kaoto-operator"
 	KaotoDeploymentClusterRoleName string = "kaoto-backend"
@@ -30,6 +32,12 @@ const (
 	KaotoPortType                  string = "http"
 	KaotoLivenessProbePath         string = "/q/health/live"
 	KaotoReadinessProbePath        string = "/q/health/ready"
+
+	KubernetesLabelAppName      = "app.kubernetes.io/name"
+	KubernetesLabelAppInstance  = "app.kubernetes.io/instance"
+	KubernetesLabelAppComponent = "app.kubernetes.io/component"
+	KubernetesLabelAppPartOf    = "app.kubernetes.io/part-of"
+	KubernetesLabelAppManagedBy = "app.kubernetes.io/managed-by"
 )
 
 type ReconciliationRequest struct {
