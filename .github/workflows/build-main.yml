@@ -15,7 +15,9 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       version: "${{ github.ref_name }}-${{ github.sha }}"
+      standalone-version: "quay.io/kaotoio/standalone:stable-jvm"
       olm: false
+      tag: main
     secrets:
       registry: "quay.io"
       registry-username: ${{ secrets.QUAY_USERNAME }}

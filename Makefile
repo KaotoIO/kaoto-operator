@@ -60,7 +60,7 @@ IMG ?= ${IMAGE_TAG_BASE}:${IMG_VERSION}
 ENVTEST_K8S_VERSION = 1.26.0
 
 # Kaoto image that is installed by the operator
-KAOTO_STANDALONE_IMAGE ?= quay.io/kaotoio/standalone:main-jvm
+KAOTO_STANDALONE_IMAGE ?= quay.io/kaotoio/standalone:stable-jvm
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
