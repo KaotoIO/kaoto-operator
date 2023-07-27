@@ -52,7 +52,7 @@ func NewClient(cfg *rest.Config, scheme *runtime.Scheme, cc ctrl.Client) (*Clien
 		rest:      restClient,
 	}
 
-	io, err := isOpenShift(discoveryClient)
+	io, err := IsOpenShift(discoveryClient)
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +87,10 @@ func (c *Client) IsOpenShift() (bool, error) {
 		return false, nil
 	}
 
-	return isOpenShift(c.Discovery)
+	return IsOpenShift(c.Discovery)
 }
 
-func isOpenShift(d discovery.DiscoveryInterface) (bool, error) {
+func IsOpenShift(d discovery.DiscoveryInterface) (bool, error) {
 	_, err := d.ServerResourcesForGroupVersion("route.openshift.io/v1")
 	if err != nil && k8serrors.IsNotFound(err) {
 		return false, nil

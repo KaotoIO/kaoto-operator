@@ -22,3 +22,9 @@ jobs:
       registry: "quay.io"
       registry-username: ${{ secrets.QUAY_USERNAME }}
       registry-password: ${{ secrets.QUAY_PASSWORD }}
+  e2e:
+    uses: ./.github/workflows/e2e.yml
+    needs:
+      - build
+    with:
+      standalone-version: "quay.io/kaotoio/standalone:stable-jvm"

@@ -3,11 +3,12 @@ package designer
 import (
 	"context"
 
-	"github.com/kaotoIO/kaoto-operator/config/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/client"
+
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/kaotoIO/kaoto-operator/config/apply"
 
 	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
 

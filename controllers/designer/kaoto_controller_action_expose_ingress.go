@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kaotoIO/kaoto-operator/config/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/client"
+
 	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/kaotoIO/kaoto-operator/config/apply"
 
 	netv1 "k8s.io/api/networking/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"

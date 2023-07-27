@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/client"
+
 	"github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
 
 	"github.com/go-logr/logr"
-	"github.com/kaotoIO/kaoto-operator/config/client"
 	"github.com/kaotoIO/kaoto-operator/pkg/pointer"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -19,8 +22,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"github.com/kaotoIO/kaoto-operator/config/apply"
 
 	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
 	rbacv1ac "k8s.io/client-go/applyconfigurations/rbac/v1"

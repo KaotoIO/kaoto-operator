@@ -3,11 +3,11 @@ package designer
 import (
 	"context"
 
+	"github.com/kaotoIO/kaoto-operator/pkg/client"
+
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-
-	"github.com/kaotoIO/kaoto-operator/config/client"
 
 	kaotoiov1alpha1 "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"

@@ -20,9 +20,9 @@ import (
 	"context"
 	"sort"
 
-	"github.com/go-logr/logr"
-	"github.com/kaotoIO/kaoto-operator/config/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/client"
 
+	"github.com/go-logr/logr"
 	"go.uber.org/multierr"
 
 	"github.com/pkg/errors"

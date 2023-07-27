@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kaotoIO/kaoto-operator/config/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/client"
+
 	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/kaotoIO/kaoto-operator/config/apply"
 
 	routev1 "github.com/openshift/api/route/v1"
 	routev1ac "github.com/openshift/client-go/route/applyconfigurations/route/v1"
