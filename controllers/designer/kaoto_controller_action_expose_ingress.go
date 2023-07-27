@@ -92,7 +92,7 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 		}
 
 		if !strings.HasSuffix(rr.Kaoto.Status.Endpoint, "/") {
-			rr.Kaoto.Status.Endpoint = rr.Kaoto.Status.Endpoint + "/"
+			rr.Kaoto.Status.Endpoint += "/"
 		}
 	}
 
@@ -113,7 +113,7 @@ func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) 
 	}
 
 	if !strings.HasSuffix(path, "(/|$)(.*)") {
-		path = path + "(/|$)(.*)"
+		path += "(/|$)(.*)"
 	}
 
 	resource := netv1ac.Ingress(rr.Kaoto.Name, rr.Kaoto.Namespace).

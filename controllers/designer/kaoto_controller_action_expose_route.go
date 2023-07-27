@@ -89,14 +89,13 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 		rr.Kaoto.Status.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local/", rr.Kaoto.Name, rr.Kaoto.Namespace)
 
 		if len(in.Status.Ingress) > 0 {
-			switch {
-			case in.Status.Ingress[0].Host != "":
+			if in.Status.Ingress[0].Host != "" {
 				rr.Kaoto.Status.Endpoint = "https://" + in.Status.Ingress[0].Host + in.Spec.Path
 			}
 		}
 
 		if !strings.HasSuffix(rr.Kaoto.Status.Endpoint, "/") {
-			rr.Kaoto.Status.Endpoint = rr.Kaoto.Status.Endpoint + "/"
+			rr.Kaoto.Status.Endpoint += "/"
 		}
 	}
 

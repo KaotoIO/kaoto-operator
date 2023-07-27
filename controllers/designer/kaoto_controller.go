@@ -233,7 +233,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())
 		return ctrl.Result{Requeue: true}, nil
-	} else {
+	} else if err != nil {
 		allErrors = multierr.Append(allErrors, err)
 	}
 
