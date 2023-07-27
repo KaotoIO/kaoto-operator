@@ -135,44 +135,44 @@ func (r *KaotoReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		predicate.Or(
 			predicate.ResourceVersionChangedPredicate{},
 		)))
-	c = c.Watches(&rbacv1.ClusterRoleBinding{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, object ctrlcl.Object) []reconcile.Request {
-		crb, ok := object.(*rbacv1.ClusterRoleBinding)
-		if !ok {
-			r.l.Error(fmt.Errorf("type assertion failed: %v", object), "failed to retrieve ClusterRoleBinding")
-			return nil
-		}
 
-		if crb.Labels != nil && crb.Labels[KubernetesLabelAppManagedBy] == KaotoOperatorFieldManager {
-			list := &kaotoiov1alpha1.KaotoList{}
-
-			if err := r.List(ctx, list); err != nil {
-				r.l.Error(err, "failed to retrieve KaotoList list")
+	c = c.Watches(
+		&rbacv1.ClusterRoleBinding{},
+		handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, object ctrlcl.Object) []reconcile.Request {
+			crb, ok := object.(*rbacv1.ClusterRoleBinding)
+			if !ok {
+				r.l.Error(fmt.Errorf("type assertion failed: %v", object), "failed to retrieve ClusterRoleBinding")
 				return nil
 			}
 
-			requests := make([]reconcile.Request, 0)
-			for i := range list.Items {
-				if !list.Items[i].ObjectMeta.DeletionTimestamp.IsZero() {
-					continue
-				}
-				if crb.Labels[KubernetesLabelAppInstance] != list.Items[i].Name {
-					continue
-				}
+			if crb.Labels != nil &&
+				crb.Labels[KubernetesLabelAppManagedBy] == KaotoOperatorFieldManager &&
+				len(crb.Subjects) == 1 &&
+				crb.Subjects[0].Kind == rbacv1.ServiceAccountKind {
 
-				requests = append(requests, reconcile.Request{
+				//
+				// The ClusterRoleBinding is defined as follows:
+				//
+				// bracv1ac.ClusterRoleBinding(rr.Kaoto.Namespace + "-" + rr.Kaoto.Name).
+				//		WithSubjects(rbacv1ac.Subject().
+				//			WithKind(rbacv1.ServiceAccountKind).
+				//			WithNamespace(rr.Kaoto.Namespace).
+				//			WithName(rr.Kaoto.Name))
+				//
+				// Hence we can use the subject's name and namespace to trigger a reconcile loop
+				// to the related Kaoto resource
+				//
+				return []reconcile.Request{{
 					NamespacedName: types.NamespacedName{
-						Name:      list.Items[i].Name,
-						Namespace: list.Items[i].Namespace,
+						Name:      crb.Subjects[0].Name,
+						Namespace: crb.Subjects[0].Namespace,
 					},
-				})
+				}}
 			}
 
-			return requests
-		}
+			return nil
 
-		return nil
-
-	}))
+		}))
 
 	switch r.ClusterType {
 	case ClusterTypeVanilla:
@@ -238,7 +238,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// are cluster scoped such as a ClusterRoleBinding hence must be deleted
 		//
 
-		err := rr.Client.RbacV1().ClusterRoleBindings().Delete(ctx, rr.Kaoto.Name, metav1.DeleteOptions{
+		err := rr.Client.RbacV1().ClusterRoleBindings().Delete(ctx, rr.Kaoto.Namespace+"-"+rr.Kaoto.Name, metav1.DeleteOptions{
 			PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
 		})
 

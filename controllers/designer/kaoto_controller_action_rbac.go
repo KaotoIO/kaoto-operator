@@ -85,7 +85,8 @@ func (a *rbacAction) serviceAccount(ctx context.Context, rr *ReconciliationReque
 }
 
 func (a *rbacAction) binding(ctx context.Context, rr *ReconciliationRequest) error {
-	resource := rbacv1ac.ClusterRoleBinding(rr.Kaoto.Name).
+	// A ClusterRoleBinding is not namespaced hence, the name must be made unique
+	resource := rbacv1ac.ClusterRoleBinding(rr.Kaoto.Namespace + "-" + rr.Kaoto.Name).
 		WithLabels(Labels(rr.Kaoto)).
 		WithSubjects(rbacv1ac.Subject().
 			WithKind(rbacv1.ServiceAccountKind).
