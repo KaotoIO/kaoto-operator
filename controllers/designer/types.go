@@ -3,6 +3,8 @@ package designer
 import (
 	"context"
 
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/kaotoIO/kaoto-operator/config/client"
@@ -49,5 +51,7 @@ type ReconciliationRequest struct {
 }
 
 type Action interface {
-	Apply(ctx context.Context, rr *ReconciliationRequest) error
+	Configure(context.Context, *client.Client, *builder.Builder) (*builder.Builder, error)
+	Apply(context.Context, *ReconciliationRequest) error
+	Cleanup(context.Context, *ReconciliationRequest) error
 }

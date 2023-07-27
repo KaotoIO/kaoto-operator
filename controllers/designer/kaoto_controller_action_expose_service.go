@@ -3,6 +3,10 @@ package designer
 import (
 	"context"
 
+	"github.com/kaotoIO/kaoto-operator/config/client"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	"github.com/kaotoIO/kaoto-operator/config/apply"
 
 	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
@@ -14,7 +18,24 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+func NewServiceAction() Action {
+	return &serviceAction{}
+}
+
 type serviceAction struct {
+}
+
+func (a *serviceAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
+	b = b.Owns(&corev1.Service{}, builder.WithPredicates(
+		predicate.Or(
+			predicate.ResourceVersionChangedPredicate{},
+		)))
+
+	return b, nil
+}
+
+func (a *serviceAction) Cleanup(context.Context, *ReconciliationRequest) error {
+	return nil
 }
 
 func (a *serviceAction) Apply(ctx context.Context, rr *ReconciliationRequest) error {

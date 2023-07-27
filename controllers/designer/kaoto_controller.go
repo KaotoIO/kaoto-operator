@@ -18,35 +18,20 @@ package designer
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	"github.com/go-logr/logr"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"github.com/kaotoIO/kaoto-operator/pkg/pointer"
-
 	"github.com/kaotoIO/kaoto-operator/config/client"
-
-	rbacv1 "k8s.io/api/rbac/v1"
 
 	"go.uber.org/multierr"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
-
-	routev1 "github.com/openshift/api/route/v1"
 	"github.com/pkg/errors"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
-	ctrlcl "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -63,6 +48,7 @@ func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
 	}
 
 	rec := KaotoReconciler{}
+	rec.l = ctrl.Log.WithName("controller")
 	rec.Client = c
 	rec.Scheme = manager.GetScheme()
 	rec.ClusterType = ClusterTypeVanilla
@@ -76,17 +62,16 @@ func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
 	}
 
 	rec.actions = make([]Action, 0)
-	rec.actions = append(rec.actions, &rbacAction{})
-	rec.actions = append(rec.actions, &serviceAction{})
+	rec.actions = append(rec.actions, NewRBACAction())
+	rec.actions = append(rec.actions, NewServiceAction())
 
 	if isOpenshift {
-		rec.actions = append(rec.actions, &routeAction{})
+		rec.actions = append(rec.actions, NewRouteAction())
 	} else {
-		rec.actions = append(rec.actions, &ingressAction{})
+		rec.actions = append(rec.actions, NewIngressAction())
 	}
 
-	rec.actions = append(rec.actions, &deployAction{})
-	rec.l = ctrl.Log.WithName("controller")
+	rec.actions = append(rec.actions, NewDeployAction())
 
 	return &rec, nil
 }
@@ -116,78 +101,21 @@ type KaotoReconciler struct {
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *KaotoReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *KaotoReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
 	c := ctrl.NewControllerManagedBy(mgr)
 
 	c = c.For(&kaotoiov1alpha1.Kaoto{}, builder.WithPredicates(
 		predicate.Or(
 			predicate.GenerationChangedPredicate{},
 		)))
-	c = c.Owns(&appsv1.Deployment{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
-	c = c.Owns(&corev1.Service{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
-	c = c.Owns(&corev1.ServiceAccount{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
 
-	c = c.Watches(
-		&rbacv1.ClusterRoleBinding{},
-		handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, object ctrlcl.Object) []reconcile.Request {
-			crb, ok := object.(*rbacv1.ClusterRoleBinding)
-			if !ok {
-				r.l.Error(fmt.Errorf("type assertion failed: %v", object), "failed to retrieve ClusterRoleBinding")
-				return nil
-			}
+	for i := range r.actions {
+		b, err := r.actions[i].Configure(ctx, r.Client, c)
+		if err != nil {
+			return err
+		}
 
-			if crb.Labels != nil &&
-				crb.Labels[KubernetesLabelAppManagedBy] == KaotoOperatorFieldManager &&
-				len(crb.Subjects) == 1 &&
-				crb.Subjects[0].Kind == rbacv1.ServiceAccountKind {
-
-				//
-				// The ClusterRoleBinding is defined as follows:
-				//
-				// bracv1ac.ClusterRoleBinding(rr.Kaoto.Namespace + "-" + rr.Kaoto.Name).
-				//		WithSubjects(rbacv1ac.Subject().
-				//			WithKind(rbacv1.ServiceAccountKind).
-				//			WithNamespace(rr.Kaoto.Namespace).
-				//			WithName(rr.Kaoto.Name))
-				//
-				// Hence we can use the subject's name and namespace to trigger a reconcile loop
-				// to the related Kaoto resource
-				//
-				return []reconcile.Request{{
-					NamespacedName: types.NamespacedName{
-						Name:      crb.Subjects[0].Name,
-						Namespace: crb.Subjects[0].Namespace,
-					},
-				}}
-			}
-
-			return nil
-
-		}))
-
-	switch r.ClusterType {
-	case ClusterTypeVanilla:
-		c.Owns(&netv1.Ingress{}, builder.WithPredicates(
-			predicate.Or(
-				predicate.ResourceVersionChangedPredicate{},
-				predicates.StatusChanged{},
-			)))
-	case ClusterTypeOpenShift:
-		c.Owns(&routev1.Route{}, builder.WithPredicates(
-			predicate.Or(
-				predicate.ResourceVersionChangedPredicate{},
-				predicates.StatusChanged{},
-			)))
-
+		c = b
 	}
 
 	return c.Complete(r)
@@ -234,16 +162,13 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	} else {
 
 		//
-		// Some resources cannot be garbage collected and automatically removed using ownership as i.e. they
-		// are cluster scoped such as a ClusterRoleBinding hence must be deleted
+		// Cleanup leftovers if needed
 		//
 
-		err := rr.Client.RbacV1().ClusterRoleBindings().Delete(ctx, rr.Kaoto.Namespace+"-"+rr.Kaoto.Name, metav1.DeleteOptions{
-			PropagationPolicy: pointer.Any(metav1.DeletePropagationForeground),
-		})
-
-		if err != nil && !k8serrors.IsNotFound(err) {
-			return ctrl.Result{}, errors.Wrapf(err, "failure removing ClusterRoleBindings %s", rr.Kaoto.Name)
+		for i := len(r.actions) - 1; i >= 0; i-- {
+			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 
 		//

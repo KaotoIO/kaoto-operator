@@ -39,7 +39,7 @@ func NewRunCmd() *cobra.Command {
 					return err
 				}
 
-				return rec.SetupWithManager(manager)
+				return rec.SetupWithManager(cmd.Context(), manager)
 			})
 		},
 	}

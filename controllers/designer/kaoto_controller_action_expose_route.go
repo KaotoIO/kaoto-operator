@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kaotoIO/kaoto-operator/config/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	"github.com/kaotoIO/kaoto-operator/config/apply"
 
 	routev1 "github.com/openshift/api/route/v1"
@@ -19,7 +24,25 @@ var routeRewriteAnnotations = map[string]string{
 	"haproxy.router.openshift.io/rewrite-target": "/",
 }
 
+func NewRouteAction() Action {
+	return &routeAction{}
+}
+
 type routeAction struct {
+}
+
+func (a *routeAction) Cleanup(context.Context, *ReconciliationRequest) error {
+	return nil
+}
+
+func (a *routeAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
+	b = b.Owns(&routev1.Route{}, builder.WithPredicates(
+		predicate.Or(
+			predicate.ResourceVersionChangedPredicate{},
+			predicates.StatusChanged{},
+		)))
+
+	return b, nil
 }
 
 func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) error {

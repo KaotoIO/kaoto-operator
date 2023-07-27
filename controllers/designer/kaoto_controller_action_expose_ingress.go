@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kaotoIO/kaoto-operator/config/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	"github.com/kaotoIO/kaoto-operator/config/apply"
 
 	netv1 "k8s.io/api/networking/v1"
@@ -14,7 +19,25 @@ import (
 	netv1ac "k8s.io/client-go/applyconfigurations/networking/v1"
 )
 
+func NewIngressAction() Action {
+	return &ingressAction{}
+}
+
 type ingressAction struct {
+}
+
+func (a *ingressAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
+	b = b.Owns(&netv1.Ingress{}, builder.WithPredicates(
+		predicate.Or(
+			predicate.ResourceVersionChangedPredicate{},
+			predicates.StatusChanged{},
+		)))
+
+	return b, nil
+}
+
+func (a *ingressAction) Cleanup(context.Context, *ReconciliationRequest) error {
+	return nil
 }
 
 func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) error {

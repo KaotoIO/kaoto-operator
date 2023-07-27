@@ -4,6 +4,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/kaotoIO/kaoto-operator/config/client"
+	appsv1 "k8s.io/api/apps/v1"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	"github.com/kaotoIO/kaoto-operator/config/apply"
 	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1ac "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -19,7 +24,24 @@ import (
 	appsv1ac "k8s.io/client-go/applyconfigurations/apps/v1"
 )
 
+func NewDeployAction() Action {
+	return &deployAction{}
+}
+
 type deployAction struct {
+}
+
+func (a *deployAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
+	b = b.Owns(&appsv1.Deployment{}, builder.WithPredicates(
+		predicate.Or(
+			predicate.ResourceVersionChangedPredicate{},
+		)))
+
+	return b, nil
+}
+
+func (a *deployAction) Cleanup(context.Context, *ReconciliationRequest) error {
+	return nil
 }
 
 func (a *deployAction) Apply(ctx context.Context, rr *ReconciliationRequest) error {
