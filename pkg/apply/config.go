@@ -8,12 +8,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func WithOwnerReference(object client.Object) *metav1ac.OwnerReferenceApplyConfiguration {
+func WithOwnerReference(owner client.Object) *metav1ac.OwnerReferenceApplyConfiguration {
 	return metav1ac.OwnerReference().
-		WithAPIVersion(object.GetObjectKind().GroupVersionKind().GroupVersion().String()).
-		WithKind(object.GetObjectKind().GroupVersionKind().Kind).
-		WithName(object.GetName()).
-		WithUID(object.GetUID()).
+		WithAPIVersion(owner.GetObjectKind().GroupVersionKind().GroupVersion().String()).
+		WithKind(owner.GetObjectKind().GroupVersionKind().Kind).
+		WithName(owner.GetName()).
+		WithUID(owner.GetUID()).
 		WithBlockOwnerDeletion(true).
 		WithController(true)
 }
