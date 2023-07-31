@@ -13,7 +13,7 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Kaoto is the Schema for the kaotoes API.
+    - description: Kaoto is the Schema for the kaotos API.
       displayName: Kaoto
       kind: Kaoto
       name: kaotos.designer.kaoto.io

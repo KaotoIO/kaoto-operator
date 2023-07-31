@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
 
 	"github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
 

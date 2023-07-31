@@ -3,9 +3,9 @@ package designer
 import (
 	"context"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
 
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
 
 	appsv1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/builder"

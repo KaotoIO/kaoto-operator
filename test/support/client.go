@@ -5,9 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	designerApi "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
-	"github.com/kaotoIO/kaoto-operator/pkg/client"
-	routev1 "github.com/openshift/api/route/v1"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
+
 	route "github.com/openshift/client-go/route/clientset/versioned"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/discovery"
@@ -15,11 +14,14 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+
+	kaotoClient "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned"
 )
 
 type Client struct {
 	kubernetes.Interface
 
+	Kaoto     kaotoClient.Interface
 	Discovery discovery.DiscoveryInterface
 	Route     route.Interface
 
@@ -53,19 +55,16 @@ func newClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	kClient, err := kaotoClient.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	c := Client{
-		scheme:    runtime.NewScheme(),
 		Interface: kubeClient,
 		Discovery: discoveryClient,
+		Kaoto:     kClient,
 		config:    cfg,
-	}
-
-	if err := designerApi.AddToScheme(c.scheme); err != nil {
-		return nil, err
-	}
-	if err := routev1.Install(c.scheme); err != nil {
-		return nil, err
 	}
 
 	io, err := client.IsOpenShift(discoveryClient)

@@ -9,6 +9,10 @@ IMG_VERSION ?= latest
 LINT_GOGC := 10
 LINT_DEADLINE := 10m
 
+MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+PROJECT_PATH := $(patsubst %/,%,$(dir $(MKFILE_PATH)))
+
+
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -96,12 +100,13 @@ help: ## Display this help.
 ##@ Development
 
 .PHONY: manifests
-manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=kaoto-operator crd paths="./..." output:crd:artifacts:config=config/crd/bases
+manifests: codegen-tools-install ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+	$(PROJECT_PATH)/hack/scripts/gen_crd.sh $(PROJECT_PATH)
 
 .PHONY: generate
-generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+generate: codegen-tools-install ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+	$(PROJECT_PATH)/hack/scripts/gen_res.sh $(PROJECT_PATH)
+	$(PROJECT_PATH)/hack/scripts/gen_client.sh $(PROJECT_PATH)
 
 .PHONY: fmt
 fmt: goimport ## Run go fmt, gomiport against code.
@@ -118,7 +123,7 @@ test: manifests generate fmt vet ## Run tests.
 
 .PHONY: test/e2e
 test/e2e: manifests generate fmt vet ## Run e2e tests.
-	go test ./test/e2e/...
+	go test -v ./test/e2e/...
 
 ##@ Build
 
@@ -225,7 +230,6 @@ $(LOCALBIN):
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 GL ?= $(LOCALBIN)/golangci-lint
 GOIMPORT ?= $(LOCALBIN)/goimports
 YQ ?= $(LOCALBIN)/yq
@@ -233,6 +237,7 @@ YQ ?= $(LOCALBIN)/yq
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.11.1
+CODEGEN_VERSION := v0.27.4
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -243,12 +248,6 @@ $(KUSTOMIZE): $(LOCALBIN)
 		rm -rf $(LOCALBIN)/kustomize; \
 	fi
 	@test -s $(LOCALBIN)/kustomize || { curl -Ss $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
-
-.PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	@test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 .PHONY: operator-sdk
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
@@ -293,7 +292,6 @@ bundle: manifests kustomize operator-sdk yq ## Generate bundle manifests and met
 	$(OPERATOR_SDK) generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle --extra-service-accounts kaoto-backend $(BUNDLE_GEN_FLAGS)
-	$(YQ) -i '.spec.customresourcedefinitions.owned[0].name = "kaotoes.designer.kaoto.io"' bundle/manifests/kaoto-operator.clusterserviceversion.yaml
 	$(YQ) -i '.metadata.annotations.containerImage = .spec.install.spec.deployments[0].spec.template.spec.containers[0].image' bundle/manifests/kaoto-operator.clusterserviceversion.yaml
 	$(OPERATOR_SDK) bundle validate ./bundle
 
@@ -345,3 +343,13 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+
+
+.PHONY: codegen-tools-install
+codegen-tools-install: $(LOCALBIN)
+	@# We must force the installation to make sure we are using the correct version
+	@# Note: as there is no --version in the tools, we cannot rely on cached local versions
+	@echo "Installing code gen tools"
+
+	$(PROJECT_PATH)/hack/scripts/install_gen_tools.sh $(PROJECT_PATH) $(CODEGEN_VERSION) $(CONTROLLER_TOOLS_VERSION)

@@ -3,7 +3,7 @@ package designer
 import (
 	"context"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/client"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 

@@ -5,6 +5,8 @@ import (
 	"sync"
 	"testing"
 
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/onsi/gomega"
 )
 
@@ -12,6 +14,8 @@ type Test interface {
 	T() *testing.T
 	Ctx() context.Context
 	Client() *Client
+
+	NewTestNamespace(...Option[*corev1.Namespace]) *corev1.Namespace
 
 	gomega.Gomega
 }
@@ -74,4 +78,16 @@ func (t *T) Client() *Client {
 		t.client = c
 	})
 	return t.client
+}
+
+func (t *T) NewTestNamespace(options ...Option[*corev1.Namespace]) *corev1.Namespace {
+	t.T().Helper()
+
+	namespace := createTestNamespace(t, options...)
+
+	t.T().Cleanup(func() {
+		deleteTestNamespace(t, namespace)
+	})
+
+	return namespace
 }
