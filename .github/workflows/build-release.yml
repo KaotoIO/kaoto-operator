@@ -1,0 +1,36 @@
+name: Publish Release
+on:
+  workflow_call:
+    inputs:
+      operator-version:
+        required: true
+        type: string
+      standalone-version:
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+      - name: "Tag"
+        run: |
+          git tag -a ${{ inputs.operator-version }} ${{ inputs.operator-version }}
+          git push origin ${{ inputs.operator-version }}
+  release:
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      version: "${{ inputs.operator-version }}"
+      standalone-version: "${{ inputs.standalone-version }}"
+      olm: false
+      tag: ${{ inputs.operator-version }}
+    secrets:
+      registry: "quay.io"
+      registry-username: ${{ secrets.QUAY_USERNAME }}
+      registry-password: ${{ secrets.QUAY_PASSWORD }}

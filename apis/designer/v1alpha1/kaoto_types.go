@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // KaotoSpec defines the desired state of Kaoto.
@@ -45,12 +46,14 @@ type KaotoStatus struct {
 	Endpoint           string             `json:"endpoint,omitempty"`
 }
 
+// +genclient
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="The phase"
 // +kubebuilder:printcolumn:name="Endpoint",type=string,JSONPath=`.status.endpoint`,description="The endpoint"
+// +kubebuilder:resource:path=kaotos,scope=Namespaced,shortName=kd,categories=integration;camel
 
-// Kaoto is the Schema for the kaotoes API.
+// Kaoto is the Schema for the kaotos API.
 type Kaoto struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -70,4 +73,9 @@ type KaotoList struct {
 
 func init() {
 	SchemeBuilder.Register(&Kaoto{}, &KaotoList{})
+}
+
+// Resource takes an unqualified resource and returns a Group qualified GroupResource
+func Resource(resource string) schema.GroupResource {
+	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }

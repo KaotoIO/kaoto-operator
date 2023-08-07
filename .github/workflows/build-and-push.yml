@@ -6,9 +6,15 @@ on:
       version:
         required: true
         type: string
+      standalone-version:
+        required: true
+        type: string
       olm:
         required: true
         type: boolean
+      tag:
+        required: true
+        type: string
     secrets:
       registry:
         required: true
@@ -23,11 +29,15 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.tag }}
       - name: "Set up Go"
         uses: actions/setup-go@v4
         with:
           go-version: '1.20'
       - name: "Build"
+        env:
+          KAOTO_STANDALONE_IMAGE: ${{ inputs.standalone-version }}
         run: make build
       - name: "Test"
         run: make test

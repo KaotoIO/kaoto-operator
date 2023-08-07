@@ -5,18 +5,40 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/resources"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/pointer"
-	"github.com/pkg/errors"
+	"github.com/kaotoIO/kaoto-operator/pkg/apply"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	netv1 "k8s.io/api/networking/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	netv1ac "k8s.io/client-go/applyconfigurations/networking/v1"
 )
 
+func NewIngressAction() Action {
+	return &ingressAction{}
+}
+
 type ingressAction struct {
+}
+
+func (a *ingressAction) Configure(_ context.Context, _ *client.Client, b *builder.Builder) (*builder.Builder, error) {
+	b = b.Owns(&netv1.Ingress{}, builder.WithPredicates(
+		predicate.Or(
+			predicate.ResourceVersionChangedPredicate{},
+			predicates.StatusChanged{},
+		)))
+
+	return b, nil
+}
+
+func (a *ingressAction) Cleanup(context.Context, *ReconciliationRequest) error {
+	return nil
 }
 
 func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) error {
@@ -71,7 +93,7 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 		}
 
 		if !strings.HasSuffix(rr.Kaoto.Status.Endpoint, "/") {
-			rr.Kaoto.Status.Endpoint = rr.Kaoto.Status.Endpoint + "/"
+			rr.Kaoto.Status.Endpoint += "/"
 		}
 	}
 
@@ -81,67 +103,49 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 }
 
 func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) error {
-	return reify(
+	host := ""
+	path := "/" + rr.Kaoto.Name + "(/|$)(.*)"
+
+	if rr.Kaoto.Spec.Ingress.Host != "" {
+		host = rr.Kaoto.Spec.Ingress.Host
+	}
+	if rr.Kaoto.Spec.Ingress.Path != "" {
+		path = rr.Kaoto.Spec.Ingress.Path
+	}
+
+	if !strings.HasSuffix(path, "(/|$)(.*)") {
+		path += "(/|$)(.*)"
+	}
+
+	resource := netv1ac.Ingress(rr.Kaoto.Name, rr.Kaoto.Namespace).
+		WithOwnerReferences(apply.WithOwnerReference(rr.Kaoto)).
+		WithAnnotations(map[string]string{
+			"nginx.ingress.kubernetes.io/use-regex":      "true",
+			"nginx.ingress.kubernetes.io/rewrite-target": "/$2",
+		}).
+		WithSpec(netv1ac.IngressSpec().
+			WithRules(netv1ac.IngressRule().
+				WithHost(host).
+				WithHTTP(netv1ac.HTTPIngressRuleValue().
+					WithPaths(netv1ac.HTTPIngressPath().
+						WithPath(path).
+						WithPathType(netv1.PathTypePrefix).
+						WithBackend(netv1ac.IngressBackend().
+							WithService(netv1ac.IngressServiceBackend().
+								WithName(rr.Kaoto.Name).
+								WithPort(netv1ac.ServiceBackendPort().
+									WithName(KaotoPortType))))))))
+
+	_, err := rr.Client.NetworkingV1().Ingresses(rr.Kaoto.Namespace).Apply(
 		ctx,
-		rr,
-		&netv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      rr.Kaoto.Name,
-				Namespace: rr.Kaoto.Namespace,
-			},
-		},
-		func(resource *netv1.Ingress) (*netv1.Ingress, error) {
-			if err := controllerutil.SetControllerReference(rr.Kaoto, resource, rr.Scheme()); err != nil {
-				return resource, errors.New("unable to set controller reference")
-			}
-
-			// For now, assume the ingress is backed by nginx
-			resources.SetAnnotation(resource, "nginx.ingress.kubernetes.io/use-regex", "true")
-			resources.SetAnnotation(resource, "nginx.ingress.kubernetes.io/rewrite-target", "/$2")
-
-			host := ""
-			path := "/" + rr.Kaoto.Name + "(/|$)(.*)"
-
-			if rr.Kaoto.Spec.Ingress.Host != "" {
-				host = rr.Kaoto.Spec.Ingress.Host
-			}
-			if rr.Kaoto.Spec.Ingress.Path != "" {
-				path = rr.Kaoto.Spec.Ingress.Path
-			}
-
-			if !strings.HasSuffix(path, "(/|$)(.*)") {
-				path = path + "(/|$)(.*)"
-			}
-
-			resource.Spec = netv1.IngressSpec{
-				Rules: []netv1.IngressRule{
-					{
-						Host: host,
-						IngressRuleValue: netv1.IngressRuleValue{
-							HTTP: &netv1.HTTPIngressRuleValue{
-								Paths: []netv1.HTTPIngressPath{
-									{
-										Path:     path,
-										PathType: pointer.Any(netv1.PathTypePrefix),
-										Backend: netv1.IngressBackend{
-											Service: &netv1.IngressServiceBackend{
-												Name: rr.Kaoto.Name,
-												Port: netv1.ServiceBackendPort{
-													Name: "http",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			}
-
-			return resource, nil
+		resource,
+		metav1.ApplyOptions{
+			FieldManager: KaotoOperatorFieldManager,
+			Force:        true,
 		},
 	)
+
+	return err
 }
 
 func (a *ingressAction) cleanup(ctx context.Context, rr *ReconciliationRequest) error {

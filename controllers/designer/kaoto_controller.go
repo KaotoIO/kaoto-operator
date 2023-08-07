@@ -20,27 +20,18 @@ import (
 	"context"
 	"sort"
 
-	rbacv1 "k8s.io/api/rbac/v1"
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
+	"github.com/go-logr/logr"
 	"go.uber.org/multierr"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/controller/predicates"
-
-	"github.com/kaotoIO/kaoto-operator/pkg/openshift"
-	routev1 "github.com/openshift/api/route/v1"
-	netv1 "k8s.io/api/networking/v1"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/discovery"
-
-	"github.com/pkg/errors"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -51,18 +42,18 @@ import (
 )
 
 func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
-	dc, err := discovery.NewDiscoveryClientForConfig(manager.GetConfig())
+	c, err := client.NewClient(manager.GetConfig(), manager.GetScheme(), manager.GetClient())
 	if err != nil {
 		return nil, err
 	}
 
 	rec := KaotoReconciler{}
-	rec.Client = manager.GetClient()
+	rec.l = ctrl.Log.WithName("controller")
+	rec.Client = c
 	rec.Scheme = manager.GetScheme()
-	rec.Discovery = dc
 	rec.ClusterType = ClusterTypeVanilla
 
-	isOpenshift, err := openshift.IsOpenShift(dc)
+	isOpenshift, err := c.IsOpenShift()
 	if err != nil {
 		return nil, err
 	}
@@ -71,32 +62,32 @@ func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
 	}
 
 	rec.actions = make([]Action, 0)
-	rec.actions = append(rec.actions, &rbacAction{})
-	rec.actions = append(rec.actions, &serviceAction{})
+	rec.actions = append(rec.actions, NewRBACAction())
+	rec.actions = append(rec.actions, NewServiceAction())
 
 	if isOpenshift {
-		rec.actions = append(rec.actions, &routeAction{})
+		rec.actions = append(rec.actions, NewRouteAction())
 	} else {
-		rec.actions = append(rec.actions, &ingressAction{})
+		rec.actions = append(rec.actions, NewIngressAction())
 	}
 
-	rec.actions = append(rec.actions, &deployAction{})
+	rec.actions = append(rec.actions, NewDeployAction())
 
 	return &rec, nil
 }
 
 type KaotoReconciler struct {
-	client.Client
+	*client.Client
 
-	Discovery   *discovery.DiscoveryClient
 	Scheme      *runtime.Scheme
 	ClusterType ClusterType
 	actions     []Action
+	l           logr.Logger
 }
 
-// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotos,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotos/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotos/finalizers,verbs=update
 // +kubebuilder:rbac:groups=camel.apache.org,resources=kameletbindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=camel.apache.org,resources=kamelets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=camel.apache.org,resources=integrations,verbs=get;list;watch;create;update;patch;delete
@@ -110,44 +101,21 @@ type KaotoReconciler struct {
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *KaotoReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *KaotoReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
 	c := ctrl.NewControllerManagedBy(mgr)
 
 	c = c.For(&kaotoiov1alpha1.Kaoto{}, builder.WithPredicates(
 		predicate.Or(
 			predicate.GenerationChangedPredicate{},
 		)))
-	c = c.Owns(&appsv1.Deployment{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
-	c = c.Owns(&corev1.Service{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
-	c = c.Owns(&corev1.ServiceAccount{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
-	c = c.Owns(&rbacv1.ClusterRoleBinding{}, builder.WithPredicates(
-		predicate.Or(
-			predicate.ResourceVersionChangedPredicate{},
-		)))
 
-	switch r.ClusterType {
-	case ClusterTypeVanilla:
-		c.Owns(&netv1.Ingress{}, builder.WithPredicates(
-			predicate.Or(
-				predicate.ResourceVersionChangedPredicate{},
-				predicates.StatusChanged{},
-			)))
-	case ClusterTypeOpenShift:
-		c.Owns(&routev1.Route{}, builder.WithPredicates(
-			predicate.Or(
-				predicate.ResourceVersionChangedPredicate{},
-				predicates.StatusChanged{},
-			)))
+	for i := range r.actions {
+		b, err := r.actions[i].Configure(ctx, r.Client, c)
+		if err != nil {
+			return err
+		}
 
+		c = b
 	}
 
 	return c.Complete(r)
@@ -194,7 +162,17 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	} else {
 
 		//
-		// Handle deletion
+		// Cleanup leftovers if needed
+		//
+
+		for i := len(r.actions) - 1; i >= 0; i-- {
+			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		//
+		// Handle finalizer
 		//
 
 		if controllerutil.RemoveFinalizer(rr.Kaoto, defaults.KaotoFinalizerName) {
@@ -255,7 +233,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())
 		return ctrl.Result{Requeue: true}, nil
-	} else {
+	} else if err != nil {
 		allErrors = multierr.Append(allErrors, err)
 	}
 
