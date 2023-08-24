@@ -21,7 +21,7 @@ func WithOwnerReference(owner client.Object) *metav1ac.OwnerReferenceApplyConfig
 func WithHTTPProbe(path string, port int32) *corev1ac.ProbeApplyConfiguration {
 	return corev1ac.Probe().
 		WithInitialDelaySeconds(5).
-		WithPeriodSeconds(1).
+		WithPeriodSeconds(10).
 		WithFailureThreshold(10).
 		WithSuccessThreshold(1).
 		WithTimeoutSeconds(10).
