@@ -123,6 +123,7 @@ func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) 
 			"nginx.ingress.kubernetes.io/use-regex":      "true",
 			"nginx.ingress.kubernetes.io/rewrite-target": "/$2",
 		}).
+		WithLabels(Labels(rr.Kaoto)).
 		WithSpec(netv1ac.IngressSpec().
 			WithRules(netv1ac.IngressRule().
 				WithHost(host).

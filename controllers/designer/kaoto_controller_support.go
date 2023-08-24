@@ -17,6 +17,8 @@ limitations under the License.
 package designer
 
 import (
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -24,7 +26,7 @@ func Labels(ref ctrl.Object) map[string]string {
 	return map[string]string{
 		KubernetesLabelAppName:      KaotoAppName,
 		KubernetesLabelAppInstance:  ref.GetName(),
-		KubernetesLabelAppComponent: "designer",
+		KubernetesLabelAppComponent: KaotoComponentDesigner,
 		KubernetesLabelAppPartOf:    KaotoAppName,
 		KubernetesLabelAppManagedBy: KaotoOperatorFieldManager,
 	}
@@ -35,4 +37,16 @@ func LabelsForSelector(ref ctrl.Object) map[string]string {
 		KubernetesLabelAppName:     KaotoAppName,
 		KubernetesLabelAppInstance: ref.GetName(),
 	}
+}
+
+func AppSelector() (labels.Selector, error) {
+	appName, err := labels.NewRequirement(KubernetesLabelAppName, selection.Equals, []string{KaotoAppName})
+	if err != nil {
+		return nil, err
+	}
+
+	selector := labels.NewSelector().
+		Add(*appName)
+
+	return selector, nil
 }

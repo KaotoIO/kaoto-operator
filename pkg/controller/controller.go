@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"time"
 
 	"github.com/kaotoIO/kaoto-operator/pkg/logger"
@@ -19,6 +20,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 var (
@@ -37,12 +39,18 @@ func Start(options Options, setup func(manager.Manager, Options) error) error {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                        Scheme,
-		MetricsBindAddress:            options.MetricsAddr,
 		HealthProbeBindAddress:        options.ProbeAddr,
 		LeaderElection:                options.EnableLeaderElection,
 		LeaderElectionID:              options.LeaderElectionID,
 		LeaderElectionReleaseOnCancel: options.ReleaseLeaderElectionOnCancel,
 		LeaderElectionNamespace:       options.LeaderElectionNamespace,
+
+		Metrics: metricsserver.Options{
+			BindAddress: options.MetricsAddr,
+		},
+		Cache: cache.Options{
+			ByObject: options.WatchSelectors,
+		},
 	})
 	if err != nil {
 		Log.Error(err, "unable to create manager")
