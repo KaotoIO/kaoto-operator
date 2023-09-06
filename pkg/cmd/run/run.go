@@ -2,7 +2,14 @@ package run
 
 import (
 	"github.com/kaotoIO/kaoto-operator/pkg/controller"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	rtcache "sigs.k8s.io/controller-runtime/pkg/cache"
+	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	designerApi "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
@@ -34,6 +41,20 @@ func NewRunCmd() *cobra.Command {
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Start(options, func(manager manager.Manager, opts controller.Options) error {
+				selector, err := designerCtl.AppSelector()
+				if err != nil {
+					return errors.Wrap(err, "unable to compute cache's watch selector")
+				}
+
+				options.WatchSelectors = map[rtclient.Object]rtcache.ByObject{
+					&appsv1.Deployment{}:         {Label: selector},
+					&netv1.Ingress{}:             {Label: selector},
+					&routev1.Route{}:             {Label: selector},
+					&corev1.Secret{}:             {Label: selector},
+					&rbacv1.ClusterRoleBinding{}: {Label: selector},
+					&corev1.ServiceAccount{}:     {Label: selector},
+				}
+
 				rec, err := designerCtl.NewKaotoReconciler(manager)
 				if err != nil {
 					return err
@@ -52,11 +73,6 @@ func NewRunCmd() *cobra.Command {
 	cmd.Flags().StringVar(&options.MetricsAddr, "metrics-bind-address", options.MetricsAddr, "The address the metric endpoint binds to.")
 	cmd.Flags().StringVar(&options.ProbeAddr, "health-probe-bind-address", options.ProbeAddr, "The address the probe endpoint binds to.")
 	cmd.Flags().StringVar(&options.PprofAddr, "pprof-bind-address", options.PprofAddr, "The address the pprof endpoint binds to.")
-
-	_ = cmd.MarkFlagRequired("operator-id")
-	_ = cmd.MarkFlagRequired("operator-group")
-	_ = cmd.MarkFlagRequired("operator-type")
-	_ = cmd.MarkFlagRequired("operator-version")
 
 	return &cmd
 }

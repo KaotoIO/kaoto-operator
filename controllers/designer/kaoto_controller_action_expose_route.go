@@ -119,6 +119,7 @@ func (a *routeAction) route(ctx context.Context, rr *ReconciliationRequest) erro
 	resource := routev1ac.Route(rr.Kaoto.Name, rr.Kaoto.Namespace).
 		WithOwnerReferences(apply.WithOwnerReference(rr.Kaoto)).
 		WithAnnotations(a.rewriteAnnotations(rr)).
+		WithLabels(Labels(rr.Kaoto)).
 		WithSpec(routev1ac.RouteSpec().
 			WithHost(host).
 			WithPath(path).

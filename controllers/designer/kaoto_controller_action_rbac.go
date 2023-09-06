@@ -184,6 +184,7 @@ func (a *rbacAction) Apply(ctx context.Context, rr *ReconciliationRequest) error
 
 func (a *rbacAction) serviceAccount(ctx context.Context, rr *ReconciliationRequest) error {
 	resource := corev1ac.ServiceAccount(rr.Kaoto.Name, rr.Kaoto.Namespace).
+		WithLabels(Labels(rr.Kaoto)).
 		WithOwnerReferences(apply.WithOwnerReference(rr.Kaoto))
 
 	_, err := rr.Client.CoreV1().ServiceAccounts(rr.Kaoto.Namespace).Apply(

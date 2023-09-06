@@ -136,6 +136,7 @@ func (a *deployAction) deployment(ctx context.Context, rr *ReconciliationRequest
 
 	resource := appsv1ac.Deployment(rr.Kaoto.Name, rr.Kaoto.Namespace).
 		WithOwnerReferences(apply.WithOwnerReference(rr.Kaoto)).
+		WithLabels(Labels(rr.Kaoto)).
 		WithSpec(appsv1ac.DeploymentSpec().
 			WithReplicas(1).
 			WithSelector(metav1ac.LabelSelector().WithMatchLabels(labels)).

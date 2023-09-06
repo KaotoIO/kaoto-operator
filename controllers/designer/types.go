@@ -27,6 +27,7 @@ const (
 	K
 
 	KaotoAppName                   string = "kaoto"
+	KaotoComponentDesigner         string = "designer"
 	KaotoStandaloneName            string = "kaoto-standalone"
 	KaotoOperatorFieldManager      string = "kaoto-operator"
 	KaotoDeploymentClusterRoleName string = "kaoto-backend"
