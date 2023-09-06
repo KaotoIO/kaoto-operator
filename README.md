@@ -13,26 +13,23 @@ Multiresource yaml files to deploy to plain kubernetes.
 ## Install Kaoto
 
 ### Plain Kubernetes (Minikube)
-
 - Install and run a Minikube instance with `ingress` addon enabled. 
 - Install Kaoto from the multi-resource yaml 
-  ```kubect apply -f https://raw.githubusercontent.com/KaotoIO/kaoto-operator/main/kubernetes/kaoto.yaml``` 
-  -  this will create `kaoto` namespace, install Kaoto and create Ingress with `kaoto.local` address 
-- Add record with actual ip of the cluster to `/etc/hosts`:  
-  ```(minikube ip) kaoto.local kaoto.backend.local```
-- Kaoto should be accessible at `http://kaoto.local` 
+  ```kubectl apply -k https://github.com/KaotoIO/kaoto-operator//config/standalone``` 
+  - this will create `kaoto-system` namespace and install Kaoto Operatorand 
+- Create sample Kaoto CR
+  ```kubectl apply -f https://raw.githubusercontent.com/KaotoIO/kaoto-operator/main/config/samples/designer.yaml```
+- Waith the the ingrees admits the endoint
+  ```  ➜ k get kaotos.designer.kaoto.io -w
+  NAME       PHASE   ENDPOINT
+  designer   Ready   http://192.168.49.2/designer/
+  ```
+- Kaoto should be accessible at `http:/$(minikube ip)/designer`
 
 ### Using the Operator
  - Clone `kaoto-operator` repository 
- - Run `make deploy` which creates `kaoto-operator` project and deploy all necessary resources as Kaoto CRD and necessary `serviceaccounts`
- - Deploy Kaoto Custom Resource sample: `kubectl apply -f config/samples/designer_v1alpha1_kaoto.yaml`
-
- 
-### Via Operator Hub 
-  - Install Kaoto operator catalog resource:  
-    ```oc apply -f https://raw.githubusercontent.com/KaotoIO/kaoto-operator/main/catalogSource.yaml```
- - Install the Kaoto Operator from the Operator
- - Create Kaoto instance from the Kaoto Operator page
+ - Run `make deploy` which creates `kaoto-system` project and deploy all necessary resources
+ - Deploy Kaoto Custom Resource sample: `kubectl apply -f config/samples/designer.yaml`
 
 ## Local development
 
@@ -42,11 +39,11 @@ Multiresource yaml files to deploy to plain kubernetes.
 3. Build the Operator: `make build`
 4. Build the Operator Image: `make docker-build`
 5. Deploy Operator: `make deploy`
-6. Create sample Kaoto CR: `kubectl apply -f config/samples/designer_v1alpha1_kaoto.yaml`
+6. Create sample Kaoto CR: `kubectl apply -f config/samples/designer.yaml`
 7. (Optional) Undeploy everything: `make undeploy`
 
 ### Run locally outside the cluster
 1. Start minikube win ingress controller enabled: `minikube start --addons ingress`
-2. Run operator locally: `make install run`
-3. Create sample Kaoto CR: `kubectl apply -f config/samples/designer_v1alpha1_kaoto.yaml`
-4. (Optional) Undeploy Kaoto: `kubectl delete kaoto kaoto-sample`
+2. Run operator locally: `make run/local`
+3. Create sample Kaoto CR: `kubectl apply -f config/samples/designer.yaml`
+4. (Optional) Undeploy Kaoto: `kubectl delete kaoto kaoto-demo`

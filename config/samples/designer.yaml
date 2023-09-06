@@ -1,0 +1,12 @@
+apiVersion: designer.kaoto.io/v1alpha1
+kind: Kaoto
+metadata:
+  labels:
+    app.kubernetes.io/name: kaoto
+    app.kubernetes.io/instance: kaoto-demo
+    app.kubernetes.io/part-of: kaoto-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kaoto-operator
+  name: designer
+spec:
+  ingress: {}
