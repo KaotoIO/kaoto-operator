@@ -75,7 +75,7 @@ jobs:
       - name: "Tag lates Container image"
         if: ${{ inputs.latest }}
         run: |
-          docker tag quay.io/kaotoio/kaoto-operator:${VERSION} push quay.io/kaotoio/kaoto-operator:latest
+          docker tag quay.io/kaotoio/kaoto-operator:${VERSION} quay.io/kaotoio/kaoto-operator:latest
           docker push quay.io/kaotoio/kaoto-operator:latest
       - name: "Build OLM bundle"
         if: ${{ inputs.olm }}
