@@ -6,6 +6,9 @@ on:
       version:
         required: true
         type: string
+      latest:
+        required: true
+        type: boolean
       standalone-version:
         required: true
         type: string
@@ -69,6 +72,11 @@ jobs:
         run: |
           make docker-build
           make docker-push
+      - name: "Tag lates Container image"
+        if: ${{ inputs.latest }}
+        run: |
+          docker tag quay.io/kaotoio/kaoto-operator:${VERSION} push quay.io/kaotoio/kaoto-operator:latest
+          docker push quay.io/kaotoio/kaoto-operator:latest
       - name: "Build OLM bundle"
         if: ${{ inputs.olm }}
         run: |
