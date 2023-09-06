@@ -11,4 +11,4 @@ patchesJson6902:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/imagePullPolicy
-        value: "Never"
+        value: "Always"

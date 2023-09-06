@@ -30,6 +30,7 @@ jobs:
       standalone-version: "${{ inputs.standalone-version }}"
       olm: false
       tag: ${{ inputs.operator-version }}
+      latest: false
     secrets:
       registry: "quay.io"
       registry-username: ${{ secrets.QUAY_USERNAME }}
