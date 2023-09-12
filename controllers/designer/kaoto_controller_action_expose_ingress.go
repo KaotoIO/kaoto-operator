@@ -130,7 +130,7 @@ func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) 
 				WithHTTP(netv1ac.HTTPIngressRuleValue().
 					WithPaths(netv1ac.HTTPIngressPath().
 						WithPath(path).
-						WithPathType(netv1.PathTypePrefix).
+						WithPathType(netv1.PathTypeImplementationSpecific).
 						WithBackend(netv1ac.IngressBackend().
 							WithService(netv1ac.IngressServiceBackend().
 								WithName(rr.Kaoto.Name).

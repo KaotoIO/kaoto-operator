@@ -26,8 +26,9 @@ type Option[T any] interface {
 
 type errorOption[T any] func(to T) error
 
-// nolint: unused
 // To be removed when the false-positivity is fixed.
+//
+//nolint:unused
 func (o errorOption[T]) applyTo(to T) error {
 	return o(to)
 }
@@ -57,7 +58,7 @@ type T struct {
 	client *Client
 	once   sync.Once
 
-	// nolint: containedctx
+	//nolint:containedctx
 	ctx context.Context
 }
 
