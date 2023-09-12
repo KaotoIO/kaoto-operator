@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	"github.com/kaotoIO/kaoto-operator/pkg/logger"
 	"sigs.k8s.io/controller-runtime/pkg/manager"

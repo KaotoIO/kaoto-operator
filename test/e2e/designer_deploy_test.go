@@ -17,6 +17,7 @@ import (
 )
 
 func TestDesignerDeploy(t *testing.T) {
+	t.Parallel()
 
 	tests := map[string]kaoto.Kaoto{
 		"no-ingress": {},
@@ -27,7 +28,9 @@ func TestDesignerDeploy(t *testing.T) {
 		},
 	}
 
-	for name, instance := range tests {
+	for name, res := range tests {
+		instance := res
+
 		t.Run(name, func(t *testing.T) {
 			test := With(t)
 			test.T().Parallel()

@@ -8,24 +8,22 @@ import (
 	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
 	route "github.com/openshift/client-go/route/clientset/versioned"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 
-	kaotoClient "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned"
+	kaoto "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned"
 )
 
 type Client struct {
 	kubernetes.Interface
 
-	Kaoto     kaotoClient.Interface
+	Kaoto     kaoto.Interface
 	Discovery discovery.DiscoveryInterface
 	Route     route.Interface
 
-	scheme *runtime.Scheme
 	config *rest.Config
 }
 
@@ -55,7 +53,7 @@ func newClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	kClient, err := kaotoClient.NewForConfig(cfg)
+	kaotoClient, err := kaoto.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +61,7 @@ func newClient() (*Client, error) {
 	c := Client{
 		Interface: kubeClient,
 		Discovery: discoveryClient,
-		Kaoto:     kClient,
+		Kaoto:     kaotoClient,
 		config:    cfg,
 	}
 

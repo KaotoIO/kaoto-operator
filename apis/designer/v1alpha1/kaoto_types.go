@@ -75,7 +75,7 @@ func init() {
 	SchemeBuilder.Register(&Kaoto{}, &KaotoList{})
 }
 
-// Resource takes an unqualified resource and returns a Group qualified GroupResource
+// Resource takes an unqualified resource and returns a Group qualified GroupResource.
 func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
