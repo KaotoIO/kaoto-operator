@@ -15,7 +15,7 @@ require (
 	go.uber.org/multierr v1.11.0
 	k8s.io/api v0.28.2
 	k8s.io/apimachinery v0.28.2
-	k8s.io/client-go v0.28.1
+	k8s.io/client-go v0.28.2
 	k8s.io/klog/v2 v2.100.1
 	sigs.k8s.io/controller-runtime v0.16.2
 	sigs.k8s.io/structured-merge-diff/v4 v4.3.0
