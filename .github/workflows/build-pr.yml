@@ -29,4 +29,4 @@ jobs:
     needs:
       - build
     with:
-      standalone-version: "quay.io/kaotoio/standalone:stable-jvm"
+      standalone-image: "quay.io/kaotoio/standalone:stable-jvm"
