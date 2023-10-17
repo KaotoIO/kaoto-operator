@@ -27,8 +27,8 @@ type FakeDesignerV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeDesignerV1alpha1) Kaotos(namespace string) v1alpha1.KaotoInterface {
-	return &FakeKaotos{c, namespace}
+func (c *FakeDesignerV1alpha1) Kaotoes(namespace string) v1alpha1.KaotoInterface {
+	return &FakeKaotoes{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

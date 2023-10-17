@@ -51,9 +51,9 @@ type KaotoStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`,description="The phase"
 // +kubebuilder:printcolumn:name="Endpoint",type=string,JSONPath=`.status.endpoint`,description="The endpoint"
-// +kubebuilder:resource:path=kaotos,scope=Namespaced,shortName=kd,categories=integration;camel
+// +kubebuilder:resource:path=kaotoes,singular=kaoto,scope=Namespaced,shortName=kd,categories=integration;camel
 
-// Kaoto is the Schema for the kaotos API.
+// Kaoto is the Schema for the kaotoes API.
 type Kaoto struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

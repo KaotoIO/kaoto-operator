@@ -32,7 +32,7 @@ import (
 )
 
 // KaotoInformer provides access to a shared informer and lister for
-// Kaotos.
+// Kaotoes.
 type KaotoInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() v1alpha1.KaotoLister
@@ -61,13 +61,13 @@ func NewFilteredKaotoInformer(client versioned.Interface, namespace string, resy
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.DesignerV1alpha1().Kaotos(namespace).List(context.TODO(), options)
+				return client.DesignerV1alpha1().Kaotoes(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.DesignerV1alpha1().Kaotos(namespace).Watch(context.TODO(), options)
+				return client.DesignerV1alpha1().Kaotoes(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&designerv1alpha1.Kaoto{},

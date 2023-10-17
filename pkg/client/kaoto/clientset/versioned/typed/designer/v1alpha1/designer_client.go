@@ -27,7 +27,7 @@ import (
 
 type DesignerV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	KaotosGetter
+	KaotoesGetter
 }
 
 // DesignerV1alpha1Client is used to interact with features provided by the designer group.
@@ -35,8 +35,8 @@ type DesignerV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *DesignerV1alpha1Client) Kaotos(namespace string) KaotoInterface {
-	return newKaotos(c, namespace)
+func (c *DesignerV1alpha1Client) Kaotoes(namespace string) KaotoInterface {
+	return newKaotoes(c, namespace)
 }
 
 // NewForConfig creates a new DesignerV1alpha1Client for the given config.

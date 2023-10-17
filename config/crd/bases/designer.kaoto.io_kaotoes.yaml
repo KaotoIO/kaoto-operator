@@ -5,7 +5,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
   creationTimestamp: null
-  name: kaotos.designer.kaoto.io
+  name: kaotoes.designer.kaoto.io
 spec:
   group: designer.kaoto.io
   names:
@@ -14,7 +14,7 @@ spec:
     - camel
     kind: Kaoto
     listKind: KaotoList
-    plural: kaotos
+    plural: kaotoes
     shortNames:
     - kd
     singular: kaoto
@@ -32,7 +32,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Kaoto is the Schema for the kaotos API.
+        description: Kaoto is the Schema for the kaotoes API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
