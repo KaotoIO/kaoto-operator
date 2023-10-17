@@ -96,7 +96,7 @@ rules:
 - apiGroups:
   - designer.kaoto.io
   resources:
-  - kaotos
+  - kaotoes
   verbs:
   - create
   - delete
@@ -108,13 +108,13 @@ rules:
 - apiGroups:
   - designer.kaoto.io
   resources:
-  - kaotos/finalizers
+  - kaotoes/finalizers
   verbs:
   - update
 - apiGroups:
   - designer.kaoto.io
   resources:
-  - kaotos/status
+  - kaotoes/status
   verbs:
   - get
   - patch

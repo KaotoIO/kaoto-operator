@@ -23,8 +23,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// Kaotos returns a KaotoInformer.
-	Kaotos() KaotoInformer
+	// Kaotoes returns a KaotoInformer.
+	Kaotoes() KaotoInformer
 }
 
 type version struct {
@@ -38,7 +38,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// Kaotos returns a KaotoInformer.
-func (v *version) Kaotos() KaotoInformer {
+// Kaotoes returns a KaotoInformer.
+func (v *version) Kaotoes() KaotoInformer {
 	return &kaotoInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

@@ -24,14 +24,14 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// KaotoLister helps list Kaotos.
+// KaotoLister helps list Kaotoes.
 // All objects returned here must be treated as read-only.
 type KaotoLister interface {
-	// List lists all Kaotos in the indexer.
+	// List lists all Kaotoes in the indexer.
 	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error)
-	// Kaotos returns an object that can list and get Kaotos.
-	Kaotos(namespace string) KaotoNamespaceLister
+	// Kaotoes returns an object that can list and get Kaotoes.
+	Kaotoes(namespace string) KaotoNamespaceLister
 	KaotoListerExpansion
 }
 
@@ -45,7 +45,7 @@ func NewKaotoLister(indexer cache.Indexer) KaotoLister {
 	return &kaotoLister{indexer: indexer}
 }
 
-// List lists all Kaotos in the indexer.
+// List lists all Kaotoes in the indexer.
 func (s *kaotoLister) List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error) {
 	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1alpha1.Kaoto))
@@ -53,15 +53,15 @@ func (s *kaotoLister) List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err
 	return ret, err
 }
 
-// Kaotos returns an object that can list and get Kaotos.
-func (s *kaotoLister) Kaotos(namespace string) KaotoNamespaceLister {
+// Kaotoes returns an object that can list and get Kaotoes.
+func (s *kaotoLister) Kaotoes(namespace string) KaotoNamespaceLister {
 	return kaotoNamespaceLister{indexer: s.indexer, namespace: namespace}
 }
 
-// KaotoNamespaceLister helps list and get Kaotos.
+// KaotoNamespaceLister helps list and get Kaotoes.
 // All objects returned here must be treated as read-only.
 type KaotoNamespaceLister interface {
-	// List lists all Kaotos in the indexer for a given namespace.
+	// List lists all Kaotoes in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error)
 	// Get retrieves the Kaoto from the indexer for a given namespace and name.
@@ -77,7 +77,7 @@ type kaotoNamespaceLister struct {
 	namespace string
 }
 
-// List lists all Kaotos in the indexer for a given namespace.
+// List lists all Kaotoes in the indexer for a given namespace.
 func (s kaotoNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error) {
 	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1alpha1.Kaoto))

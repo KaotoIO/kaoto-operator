@@ -40,13 +40,13 @@ func TestDesignerDeploy(t *testing.T) {
 			instance.Name = xid.New().String()
 			instance.Namespace = ns.Name
 
-			kd, err := test.Client().Kaoto.DesignerV1alpha1().Kaotos(ns.Name).Create(
+			kd, err := test.Client().Kaoto.DesignerV1alpha1().Kaotoes(ns.Name).Create(
 				test.Ctx(),
 				&instance,
 				metav1.CreateOptions{})
 
 			test.T().Cleanup(func() {
-				err := test.Client().Kaoto.DesignerV1alpha1().Kaotos(ns.Name).Delete(
+				err := test.Client().Kaoto.DesignerV1alpha1().Kaotoes(ns.Name).Delete(
 					test.Ctx(),
 					kd.Name,
 					metav1.DeleteOptions{},

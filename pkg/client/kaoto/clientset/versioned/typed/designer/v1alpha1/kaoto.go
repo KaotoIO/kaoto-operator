@@ -32,10 +32,10 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// KaotosGetter has a method to return a KaotoInterface.
+// KaotoesGetter has a method to return a KaotoInterface.
 // A group's client should implement this interface.
-type KaotosGetter interface {
-	Kaotos(namespace string) KaotoInterface
+type KaotoesGetter interface {
+	Kaotoes(namespace string) KaotoInterface
 }
 
 // KaotoInterface has methods to work with Kaoto resources.
@@ -54,26 +54,26 @@ type KaotoInterface interface {
 	KaotoExpansion
 }
 
-// kaotos implements KaotoInterface
-type kaotos struct {
+// kaotoes implements KaotoInterface
+type kaotoes struct {
 	client rest.Interface
 	ns     string
 }
 
-// newKaotos returns a Kaotos
-func newKaotos(c *DesignerV1alpha1Client, namespace string) *kaotos {
-	return &kaotos{
+// newKaotoes returns a Kaotoes
+func newKaotoes(c *DesignerV1alpha1Client, namespace string) *kaotoes {
+	return &kaotoes{
 		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
 
 // Get takes name of the kaoto, and returns the corresponding kaoto object, and an error if there is any.
-func (c *kaotos) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Kaoto, err error) {
+func (c *kaotoes) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Kaoto, err error) {
 	result = &v1alpha1.Kaoto{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do(ctx).
@@ -81,8 +81,8 @@ func (c *kaotos) Get(ctx context.Context, name string, options v1.GetOptions) (r
 	return
 }
 
-// List takes label and field selectors, and returns the list of Kaotos that match those selectors.
-func (c *kaotos) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.KaotoList, err error) {
+// List takes label and field selectors, and returns the list of Kaotoes that match those selectors.
+func (c *kaotoes) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.KaotoList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -90,7 +90,7 @@ func (c *kaotos) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha
 	result = &v1alpha1.KaotoList{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do(ctx).
@@ -98,8 +98,8 @@ func (c *kaotos) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested kaotos.
-func (c *kaotos) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested kaotoes.
+func (c *kaotoes) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -107,18 +107,18 @@ func (c *kaotos) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interfac
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Watch(ctx)
 }
 
 // Create takes the representation of a kaoto and creates it.  Returns the server's representation of the kaoto, and an error, if there is any.
-func (c *kaotos) Create(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.CreateOptions) (result *v1alpha1.Kaoto, err error) {
+func (c *kaotoes) Create(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.CreateOptions) (result *v1alpha1.Kaoto, err error) {
 	result = &v1alpha1.Kaoto{}
 	err = c.client.Post().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(kaoto).
 		Do(ctx).
@@ -127,11 +127,11 @@ func (c *kaotos) Create(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.Crea
 }
 
 // Update takes the representation of a kaoto and updates it. Returns the server's representation of the kaoto, and an error, if there is any.
-func (c *kaotos) Update(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.UpdateOptions) (result *v1alpha1.Kaoto, err error) {
+func (c *kaotoes) Update(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.UpdateOptions) (result *v1alpha1.Kaoto, err error) {
 	result = &v1alpha1.Kaoto{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		Name(kaoto.Name).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(kaoto).
@@ -142,11 +142,11 @@ func (c *kaotos) Update(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.Upda
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *kaotos) UpdateStatus(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.UpdateOptions) (result *v1alpha1.Kaoto, err error) {
+func (c *kaotoes) UpdateStatus(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.UpdateOptions) (result *v1alpha1.Kaoto, err error) {
 	result = &v1alpha1.Kaoto{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		Name(kaoto.Name).
 		SubResource("status").
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -157,10 +157,10 @@ func (c *kaotos) UpdateStatus(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v
 }
 
 // Delete takes name of the kaoto and deletes it. Returns an error if one occurs.
-func (c *kaotos) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+func (c *kaotoes) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		Name(name).
 		Body(&opts).
 		Do(ctx).
@@ -168,14 +168,14 @@ func (c *kaotos) Delete(ctx context.Context, name string, opts v1.DeleteOptions)
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *kaotos) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+func (c *kaotoes) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
 	if listOpts.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(&opts).
@@ -184,11 +184,11 @@ func (c *kaotos) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, li
 }
 
 // Patch applies the patch and returns the patched kaoto.
-func (c *kaotos) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Kaoto, err error) {
+func (c *kaotoes) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Kaoto, err error) {
 	result = &v1alpha1.Kaoto{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		Name(name).
 		SubResource(subresources...).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -199,7 +199,7 @@ func (c *kaotos) Patch(ctx context.Context, name string, pt types.PatchType, dat
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied kaoto.
-func (c *kaotos) Apply(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Kaoto, err error) {
+func (c *kaotoes) Apply(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Kaoto, err error) {
 	if kaoto == nil {
 		return nil, fmt.Errorf("kaoto provided to Apply must not be nil")
 	}
@@ -215,7 +215,7 @@ func (c *kaotos) Apply(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyCo
 	result = &v1alpha1.Kaoto{}
 	err = c.client.Patch(types.ApplyPatchType).
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		Name(*name).
 		VersionedParams(&patchOpts, scheme.ParameterCodec).
 		Body(data).
@@ -226,7 +226,7 @@ func (c *kaotos) Apply(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyCo
 
 // ApplyStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *kaotos) ApplyStatus(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Kaoto, err error) {
+func (c *kaotoes) ApplyStatus(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Kaoto, err error) {
 	if kaoto == nil {
 		return nil, fmt.Errorf("kaoto provided to Apply must not be nil")
 	}
@@ -244,7 +244,7 @@ func (c *kaotos) ApplyStatus(ctx context.Context, kaoto *designerv1alpha1.KaotoA
 	result = &v1alpha1.Kaoto{}
 	err = c.client.Patch(types.ApplyPatchType).
 		Namespace(c.ns).
-		Resource("kaotos").
+		Resource("kaotoes").
 		Name(*name).
 		SubResource("status").
 		VersionedParams(&patchOpts, scheme.ParameterCodec).

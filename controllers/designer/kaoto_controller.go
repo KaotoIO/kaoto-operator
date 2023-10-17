@@ -85,9 +85,9 @@ type KaotoReconciler struct {
 	l           logr.Logger
 }
 
-// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotos,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotos/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotos/finalizers,verbs=update
+// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes/finalizers,verbs=update
 // +kubebuilder:rbac:groups=camel.apache.org,resources=kameletbindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=camel.apache.org,resources=kamelets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=camel.apache.org,resources=integrations,verbs=get;list;watch;create;update;patch;delete
