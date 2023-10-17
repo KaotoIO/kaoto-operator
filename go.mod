@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/evanphx/json-patch v5.7.0+incompatible
 	github.com/go-logr/logr v1.2.4
-	github.com/onsi/gomega v1.27.10
+	github.com/onsi/gomega v1.28.0
 	github.com/openshift/api v0.0.0-20230720094506-afcbe27aec7c
 	github.com/openshift/client-go v0.0.0-20230718165156-6014fb98e86a
 	github.com/pkg/errors v0.9.1
