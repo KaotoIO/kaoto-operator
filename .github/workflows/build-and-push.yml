@@ -9,7 +9,7 @@ on:
       latest:
         required: true
         type: boolean
-      standalone-version:
+      standalone-image:
         required: true
         type: string
       olm:
@@ -40,7 +40,7 @@ jobs:
           go-version: '1.20'
       - name: "Build"
         env:
-          KAOTO_STANDALONE_IMAGE: ${{ inputs.standalone-version }}
+          KAOTO_STANDALONE_IMAGE: ${{ inputs.standalone-image }}
         run: make build
       - name: "Test"
         run: make test
