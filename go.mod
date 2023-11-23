@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/evanphx/json-patch v5.7.0+incompatible
 	github.com/go-logr/logr v1.3.0
-	github.com/onsi/gomega v1.28.0
+	github.com/onsi/gomega v1.30.0
 	github.com/openshift/api v0.0.0-20230720094506-afcbe27aec7c
 	github.com/openshift/client-go v0.0.0-20230718165156-6014fb98e86a
 	github.com/pkg/errors v0.9.1
@@ -36,7 +36,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.1 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
