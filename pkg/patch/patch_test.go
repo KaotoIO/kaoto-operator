@@ -3,7 +3,7 @@ package patch
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -22,7 +22,7 @@ func TestMergePatch(t *testing.T) {
 
 	data, err := MergePatch(d1, d2)
 
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Len(t, data, 0)
+	require.NoError(t, err)
+	require.NotNil(t, data)
+	require.Empty(t, data, 0)
 }
