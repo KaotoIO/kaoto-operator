@@ -54,9 +54,6 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 	BUNDLE_GEN_FLAGS += --use-image-digests
 endif
 
-# Set the Operator SDK version to use. By default, what is installed on the system is used.
-# This is useful for CI or a project to utilize a specific version of the operator-sdk toolkit.
-OPERATOR_SDK_VERSION ?= v1.32.0
 
 # Image URL to use all building/pushing image targets
 IMG ?= ${IMAGE_TAG_BASE}:${IMG_VERSION}
@@ -148,7 +145,7 @@ check: check/lint
 
 .PHONY: check/lint
 check/lint: golangci-lint
-	@$(GL) run \
+	@$(GOLANG_LINT) run \
 		--config .golangci.yml \
 		--out-format tab \
 		--skip-dirs etc \
@@ -157,7 +154,7 @@ check/lint: golangci-lint
 
 .PHONY: check/lint/fix
 check/lint/fix: golangci-lint
-	@$(GL) run \
+	@$(GOLANG_LINT) run \
 		--config .golangci.yml \
 		--out-format tab \
 		--skip-dirs etc \
@@ -230,14 +227,16 @@ $(LOCALBIN):
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
-GL ?= $(LOCALBIN)/golangci-lint
+GOLANG_LINT ?= $(LOCALBIN)/golangci-lint
 GOIMPORT ?= $(LOCALBIN)/goimports
 YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v3.8.7
+KUSTOMIZE_VERSION ?= v5.3.0
 CONTROLLER_TOOLS_VERSION ?= v0.13.0
-CODEGEN_VERSION := v0.27.4
+CODEGEN_VERSION ?= v0.29.0
+GOLANG_LINT_VERSION ?= v1.55.2
+OPERATOR_SDK_VERSION ?= v1.33.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -267,10 +266,10 @@ endif
 endif
 
 .PHONY: golangci-lint
-golangci-lint: $(GL)
-$(GL): $(LOCALBIN)
+golangci-lint: $(GOLANG_LINT)
+$(GOLANG_LINT): $(LOCALBIN)
 	@test -s $(LOCALBIN)/golangci-lint || \
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.1
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANG_LINT_VERSION)
 
 .PHONY: goimport
 goimport: $(GOIMPORT)
@@ -284,8 +283,6 @@ yq: $(YQ)
 $(YQ): $(LOCALBIN)
 	@test -s $(LOCALBIN)/yq || \
 	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@latest
-
-
 
 .PHONY: bundle
 bundle: manifests kustomize operator-sdk yq ## Generate bundle manifests and metadata, then validate generated files.
