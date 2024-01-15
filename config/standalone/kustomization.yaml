@@ -1,6 +1,5 @@
 resources:
 - ../default
-- ../rbac/backend
 
 patchesJson6902:
   - target:

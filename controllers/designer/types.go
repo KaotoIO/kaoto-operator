@@ -26,15 +26,13 @@ const (
 
 	K
 
-	KaotoAppName                   string = "kaoto"
-	KaotoComponentDesigner         string = "designer"
-	KaotoStandaloneName            string = "kaoto-standalone"
-	KaotoOperatorFieldManager      string = "kaoto-operator"
-	KaotoDeploymentClusterRoleName string = "kaoto-backend"
-	KaotoPort                      int32  = 8081
-	KaotoPortType                  string = "http"
-	KaotoLivenessProbePath         string = "/q/health/live"
-	KaotoReadinessProbePath        string = "/q/health/ready"
+	KaotoAppName              string = "kaoto"
+	KaotoComponentDesigner    string = "designer"
+	KaotoOperatorFieldManager string = "kaoto-operator"
+	KaotoPort                 int32  = 8080
+	KaotoPortType             string = "http"
+	KaotoLivenessProbePath    string = "/"
+	KaotoReadinessProbePath   string = "/"
 
 	KubernetesLabelAppName      = "app.kubernetes.io/name"
 	KubernetesLabelAppInstance  = "app.kubernetes.io/instance"

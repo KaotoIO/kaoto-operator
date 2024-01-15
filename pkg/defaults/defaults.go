@@ -10,5 +10,5 @@ const (
 )
 
 var (
-	KaotoStandaloneImage = "quay.io/kaotoio/standalone:stable-jvm"
+	KaotoAppImage = "quay.io/kaotoio/kaoto-app:main"
 )

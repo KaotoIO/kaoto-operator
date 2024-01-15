@@ -62,7 +62,6 @@ func NewKaotoReconciler(manager ctrl.Manager) (*KaotoReconciler, error) {
 	}
 
 	rec.actions = make([]Action, 0)
-	rec.actions = append(rec.actions, NewRBACAction())
 	rec.actions = append(rec.actions, NewServiceAction())
 
 	if isOpenshift {
@@ -88,15 +87,8 @@ type KaotoReconciler struct {
 // +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=designer.kaoto.io,resources=kaotoes/finalizers,verbs=update
-// +kubebuilder:rbac:groups=camel.apache.org,resources=kameletbindings,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=camel.apache.org,resources=kamelets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=camel.apache.org,resources=integrations,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
-// +kubebuilder:rbac:groups="",resources=pods/log,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="route.openshift.io",resources=routes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="networking.k8s.io",resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 

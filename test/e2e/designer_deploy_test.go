@@ -57,13 +57,8 @@ func TestDesignerDeploy(t *testing.T) {
 
 			test.Expect(err).NotTo(HaveOccurred())
 
-			test.Eventually(ServiceAccount(test, kd), TestTimeoutLong).Should(
-				Not(BeNil()))
-			test.Eventually(ClusterRoleBinding(test, kd), TestTimeoutLong).Should(
-				Not(BeNil()))
 			test.Eventually(Service(test, kd), TestTimeoutLong).Should(
 				Not(BeNil()))
-
 			test.Eventually(Deployment(test, kd), TestTimeoutLong).Should(
 				WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
 

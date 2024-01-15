@@ -8,4 +8,5 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: kaoto-operator
   name: kaoto-test
-spec: {}
+spec:
+  ingress: {}
