@@ -127,7 +127,7 @@ func (a *routeAction) route(ctx context.Context, rr *ReconciliationRequest) erro
 				WithKind("Service").
 				WithName(rr.Kaoto.Name)).
 			WithPort(routev1ac.RoutePort().
-				WithTargetPort(intstr.FromInt(int(KaotoPort)))).
+				WithTargetPort(intstr.FromInt32(KaotoPort))).
 			WithTLS(routev1ac.TLSConfig().
 				WithTermination(routev1.TLSTerminationEdge).
 				WithInsecureEdgeTerminationPolicy(routev1.InsecureEdgeTerminationPolicyRedirect)))
