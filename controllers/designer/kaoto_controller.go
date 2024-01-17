@@ -20,6 +20,8 @@ import (
 	"context"
 	"sort"
 
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
 	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
 	"github.com/go-logr/logr"
@@ -29,14 +31,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	kaotoiov1alpha1 "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	kaotoApi "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
 	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 )
@@ -96,7 +97,7 @@ type KaotoReconciler struct {
 func (r *KaotoReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
 	c := ctrl.NewControllerManagedBy(mgr)
 
-	c = c.For(&kaotoiov1alpha1.Kaoto{}, builder.WithPredicates(
+	c = c.For(&kaotoApi.Kaoto{}, builder.WithPredicates(
 		predicate.Or(
 			predicate.GenerationChangedPredicate{},
 		)))
@@ -110,31 +111,20 @@ func (r *KaotoReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager
 		c = b
 	}
 
-	return c.Complete(r)
+	return c.Complete(reconcile.AsReconciler[*kaotoApi.Kaoto](mgr.GetClient(), r))
 }
 
-func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *KaotoReconciler) Reconcile(ctx context.Context, res *kaotoApi.Kaoto) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
-	l.Info("Reconciling", "resource", req.NamespacedName.String())
 
 	rr := ReconciliationRequest{
-		Client: r.Client,
-		NamespacedName: types.NamespacedName{
-			Name:      req.Name,
-			Namespace: req.Namespace,
-		},
+		Client:      r.Client,
 		ClusterType: r.ClusterType,
 		// safety copy
-		Kaoto: &kaotoiov1alpha1.Kaoto{},
+		Kaoto: res.DeepCopy(),
 	}
 
-	err := r.Get(ctx, req.NamespacedName, rr.Kaoto)
-	if err != nil {
-		if k8serrors.IsNotFound(err) {
-			// no CR found
-			return ctrl.Result{}, nil
-		}
-	}
+	l.Info("Reconciling", "resource", rr.String())
 
 	if rr.Kaoto.ObjectMeta.DeletionTimestamp.IsZero() {
 
@@ -148,7 +138,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 					return ctrl.Result{}, err
 				}
 
-				return ctrl.Result{}, errors.Wrapf(err, "failure adding finalizer to connector cluster %s", req.NamespacedName)
+				return ctrl.Result{}, errors.Wrapf(err, "failure adding finalizer to connector cluster %s", rr.String())
 			}
 		}
 	} else {
@@ -173,7 +163,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 					return ctrl.Result{}, err
 				}
 
-				return ctrl.Result{}, errors.Wrapf(err, "failure removing finalizer from connector cluster %s", req.NamespacedName)
+				return ctrl.Result{}, errors.Wrapf(err, "failure removing finalizer from connector cluster %s", rr.String())
 			}
 		}
 
@@ -221,7 +211,7 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Update status
 	//
 
-	err = r.Status().Update(ctx, rr.Kaoto)
+	err := r.Status().Update(ctx, rr.Kaoto)
 	if err != nil && k8serrors.IsConflict(err) {
 		l.Info(err.Error())
 		return ctrl.Result{Requeue: true}, nil

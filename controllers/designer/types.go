@@ -2,6 +2,9 @@ package designer
 
 import (
 	"context"
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
@@ -10,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	kaotoiov1alpha1 "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type ClusterType string
@@ -43,10 +45,20 @@ const (
 
 type ReconciliationRequest struct {
 	*client.Client
-	types.NamespacedName
 
 	ClusterType ClusterType
 	Kaoto       *kaotoiov1alpha1.Kaoto
+}
+
+func (rr *ReconciliationRequest) Key() types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: rr.Kaoto.Namespace,
+		Name:      rr.Kaoto.Name,
+	}
+}
+
+func (rr *ReconciliationRequest) String() string {
+	return fmt.Sprintf("%s/%s", rr.Kaoto.Namespace, rr.Kaoto.Name)
 }
 
 type Action interface {

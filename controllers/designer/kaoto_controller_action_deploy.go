@@ -65,12 +65,9 @@ func (a *deployAction) Apply(ctx context.Context, rr *ReconciliationRequest) err
 
 func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) error {
 
-	d, err := a.deployment(ctx, rr)
-	if err != nil {
-		return err
-	}
+	d := a.deployment(rr)
 
-	_, err = rr.Client.AppsV1().Deployments(rr.Kaoto.Namespace).Apply(
+	_, err := rr.Client.AppsV1().Deployments(rr.Kaoto.Namespace).Apply(
 		ctx,
 		d,
 		metav1.ApplyOptions{
@@ -82,7 +79,7 @@ func (a *deployAction) deploy(ctx context.Context, rr *ReconciliationRequest) er
 	return err
 }
 
-func (a *deployAction) deployment(ctx context.Context, rr *ReconciliationRequest) (*appsv1ac.DeploymentApplyConfiguration, error) {
+func (a *deployAction) deployment(rr *ReconciliationRequest) *appsv1ac.DeploymentApplyConfiguration {
 	image := rr.Kaoto.Spec.Image
 	if image == "" {
 		image = defaults.KaotoAppImage
@@ -93,7 +90,7 @@ func (a *deployAction) deployment(ctx context.Context, rr *ReconciliationRequest
 	envs := make([]*corev1ac.EnvVarApplyConfiguration, 0)
 	envs = append(envs, apply.WithEnvFromField("NAMESPACE", "metadata.namespace"))
 
-	resource := appsv1ac.Deployment(rr.Kaoto.Name, rr.Kaoto.Namespace).
+	return appsv1ac.Deployment(rr.Kaoto.Name, rr.Kaoto.Namespace).
 		WithOwnerReferences(apply.WithOwnerReference(rr.Kaoto)).
 		WithLabels(Labels(rr.Kaoto)).
 		WithSpec(appsv1ac.DeploymentSpec().
@@ -114,6 +111,4 @@ func (a *deployAction) deployment(ctx context.Context, rr *ReconciliationRequest
 							corev1.ResourceMemory: KaotoStandaloneDefaultMemory,
 							corev1.ResourceCPU:    KaotoStandaloneDefaultCPU,
 						}))))))
-
-	return resource, nil
 }
