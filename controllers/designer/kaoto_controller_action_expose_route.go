@@ -82,7 +82,7 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 
 	var in routev1.Route
 
-	if err := rr.Get(ctx, rr.NamespacedName, &in); err != nil && !k8serrors.IsNotFound(err) {
+	if err := rr.Get(ctx, rr.Key(), &in); err != nil && !k8serrors.IsNotFound(err) {
 		ingressCondition.Status = metav1.ConditionFalse
 		ingressCondition.Reason = "Failure"
 		ingressCondition.Message = err.Error()
