@@ -3,16 +3,13 @@ package designer
 import (
 	"context"
 
-	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
-
 	"github.com/kaotoIO/kaoto-operator/pkg/apply"
-
+	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 	appsv1 "k8s.io/api/apps/v1"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
 	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1ac "k8s.io/client-go/applyconfigurations/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
 
@@ -99,6 +96,9 @@ func (a *deployAction) deployment(rr *ReconciliationRequest) *appsv1ac.Deploymen
 			WithTemplate(corev1ac.PodTemplateSpec().
 				WithLabels(labels).
 				WithSpec(corev1ac.PodSpec().
+					WithSecurityContext(corev1ac.PodSecurityContext().
+						WithRunAsNonRoot(true).
+						WithSeccompProfile(corev1ac.SeccompProfile().WithType(corev1.SeccompProfileTypeRuntimeDefault))).
 					WithContainers(corev1ac.Container().
 						WithImage(image).
 						WithImagePullPolicy(corev1.PullAlways).
@@ -110,5 +110,9 @@ func (a *deployAction) deployment(rr *ReconciliationRequest) *appsv1ac.Deploymen
 						WithResources(corev1ac.ResourceRequirements().WithRequests(corev1.ResourceList{
 							corev1.ResourceMemory: KaotoStandaloneDefaultMemory,
 							corev1.ResourceCPU:    KaotoStandaloneDefaultCPU,
-						}))))))
+						})).
+						WithSecurityContext(corev1ac.SecurityContext().
+							WithAllowPrivilegeEscalation(false).
+							WithRunAsNonRoot(true).
+							WithSeccompProfile(corev1ac.SeccompProfile().WithType(corev1.SeccompProfileTypeRuntimeDefault)))))))
 }
