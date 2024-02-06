@@ -1,0 +1,88 @@
+name: 🏷️ Tag, release and attach generated bundle action
+on:
+  workflow_dispatch:
+    inputs:
+      default_bump:
+        type: choice
+        description: |
+          Define what kind of bump you want
+        options: 
+        - major
+        - minor
+        - patch
+        required: true
+      operator_version:
+        type: string
+        description: |
+          Define the operator version
+        required: true
+
+jobs:
+
+  version-update:
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ github.event.inputs.operator_version }}
+      USE_IMAGE_DIGESTS: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: make bundle
+        run: make bundle
+      - name: Commit 
+        run: |
+          if [[ `git status --porcelain` ]]; then
+            echo "OK: Changes detected."
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git commit -am "Align repository"
+            git push
+          else
+            echo "WARNING: No changes were detected."
+          fi
+
+      - name: "🔧 Tar bundle"
+        shell: bash
+        run: |
+          tar -czf ${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz -C bundle .
+          ls -lh ${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz
+
+      - name: "🔧 Persist Bundle"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "bundle-${{ github.event.inputs.operator_version }}.tgz"
+          path: "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz"
+          retention-days: 1
+
+  tag-and-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs:
+      - version-update
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "🛰️ Download UI Dist"
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-${{ github.event.inputs.operator_version }}.tgz
+          path: "${{ runner.temp }}"
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ github.event.inputs.tag_version }}
+          create_annotated_tag: true
+          tag_prefix: "v"
+
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          artifacts: "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" 
