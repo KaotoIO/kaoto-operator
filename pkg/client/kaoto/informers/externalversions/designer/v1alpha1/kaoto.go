@@ -21,7 +21,7 @@ import (
 	"context"
 	time "time"
 
-	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	versioned "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned"
 	internalinterfaces "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/informers/externalversions/internalinterfaces"
 	v1alpha1 "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/listers/designer/v1alpha1"

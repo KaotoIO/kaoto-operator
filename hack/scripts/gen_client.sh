@@ -13,7 +13,7 @@ mkdir -p "${PROJECT_ROOT}/pkg/client/kaoto"
 "${PROJECT_ROOT}"/bin/applyconfiguration-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-base="${TMP_DIR}/client" \
-  --input-dirs=github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1 \
+  --input-dirs=github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1 \
   --output-package=github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/applyconfiguration
 
 "${PROJECT_ROOT}"/bin/client-gen \
@@ -22,7 +22,7 @@ mkdir -p "${PROJECT_ROOT}/pkg/client/kaoto"
   --plural-exceptions="Kaoto:Kaotoes" \
   --input=designer/v1alpha1 \
   --clientset-name "versioned" \
-  --input-base=github.com/kaotoIO/kaoto-operator/apis \
+  --input-base=github.com/kaotoIO/kaoto-operator/api \
   --apply-configuration-package=github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/applyconfiguration \
   --output-package=github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset
 
@@ -30,14 +30,14 @@ mkdir -p "${PROJECT_ROOT}/pkg/client/kaoto"
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-base="${TMP_DIR}/client" \
   --plural-exceptions="Kaoto:Kaotoes" \
-  --input-dirs=github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1 \
+  --input-dirs=github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1 \
   --output-package=github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/listers
 
 "${PROJECT_ROOT}"/bin/informer-gen \
   --go-header-file="${PROJECT_ROOT}/hack/boilerplate.go.txt" \
   --output-base="${TMP_DIR}/client" \
   --plural-exceptions="Kaoto:Kaotoes" \
-  --input-dirs=github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1 \
+  --input-dirs=github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1 \
   --versioned-clientset-package=github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned \
   --listers-package=github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/listers \
   --output-package=github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/informers

@@ -7,14 +7,13 @@ import (
 
 	"github.com/kaotoIO/kaoto-operator/pkg/controller/client"
 
+	kaoto "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned"
 	route "github.com/openshift/client-go/route/clientset/versioned"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-
-	kaoto "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned"
 )
 
 type Client struct {

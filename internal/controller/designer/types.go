@@ -12,7 +12,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	kaotoiov1alpha1 "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	kaotoiov1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 )
 
 type ClusterType string

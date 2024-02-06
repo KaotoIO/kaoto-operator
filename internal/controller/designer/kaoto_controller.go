@@ -37,7 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	kaotoApi "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	kaotoApi "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 )
