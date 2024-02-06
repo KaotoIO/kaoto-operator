@@ -20,7 +20,7 @@ package v1alpha1
 import (
 	"net/http"
 
-	v1alpha1 "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	v1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	"github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )

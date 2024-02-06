@@ -116,7 +116,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet ## Run tests.
-	go test ./pkg/... ./controllers/...
+	go test ./pkg/... ./internal/...
 
 .PHONY: test/e2e
 test/e2e: manifests generate fmt vet ## Run e2e tests.
@@ -126,11 +126,11 @@ test/e2e: manifests generate fmt vet ## Run e2e tests.
 
 .PHONY: build
 build: manifests generate fmt vet ## Build manager binary.
-	go build -ldflags="$(GOLDFLAGS)" -o bin/kaoto main.go
+	go build -ldflags="$(GOLDFLAGS)" -o bin/kaoto cmd/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run -ldflags="$(GOLDFLAGS)" main.go run --leader-election=false --zap-devel
+	go run -ldflags="$(GOLDFLAGS)" cmd/main.go run --leader-election=false --zap-devel
 
 
 .PHONY: run/local
@@ -233,8 +233,8 @@ YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.3.0
-CONTROLLER_TOOLS_VERSION ?= v0.13.0
-CODEGEN_VERSION ?= v0.29.0
+CONTROLLER_TOOLS_VERSION ?= v0.14.0
+CODEGEN_VERSION ?= v0.29.1
 GOLANG_LINT_VERSION ?= v1.55.2
 OPERATOR_SDK_VERSION ?= v1.33.0
 

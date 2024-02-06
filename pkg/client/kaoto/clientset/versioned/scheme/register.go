@@ -18,7 +18,7 @@ limitations under the License.
 package scheme
 
 import (
-	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

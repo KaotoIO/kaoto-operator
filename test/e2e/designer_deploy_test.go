@@ -9,7 +9,7 @@ import (
 
 	"github.com/rs/xid"
 
-	kaoto "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	kaoto "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/kaotoIO/kaoto-operator/test/support"

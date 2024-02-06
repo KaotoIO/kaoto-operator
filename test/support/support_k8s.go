@@ -1,7 +1,7 @@
 package support
 
 import (
-	kaotoApi "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
+	kaotoApi "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	"github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

@@ -1,6 +1,7 @@
 package run
 
 import (
+	"github.com/kaotoIO/kaoto-operator/internal/controller/designer"
 	"github.com/kaotoIO/kaoto-operator/pkg/controller"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -12,8 +13,7 @@ import (
 	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	designerApi "github.com/kaotoIO/kaoto-operator/apis/designer/v1alpha1"
-	designerCtl "github.com/kaotoIO/kaoto-operator/controllers/designer"
+	designerApi "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	routev1 "github.com/openshift/api/route/v1"
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -41,7 +41,7 @@ func NewRunCmd() *cobra.Command {
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Start(options, func(manager manager.Manager, opts controller.Options) error {
-				selector, err := designerCtl.AppSelector()
+				selector, err := designer.AppSelector()
 				if err != nil {
 					return errors.Wrap(err, "unable to compute cache's watch selector")
 				}
@@ -55,7 +55,7 @@ func NewRunCmd() *cobra.Command {
 					&corev1.ServiceAccount{}:     {Label: selector},
 				}
 
-				rec, err := designerCtl.NewKaotoReconciler(manager)
+				rec, err := designer.NewKaotoReconciler(manager)
 				if err != nil {
 					return err
 				}
