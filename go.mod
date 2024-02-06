@@ -3,7 +3,7 @@ module github.com/kaotoIO/kaoto-operator
 go 1.21
 
 require (
-	github.com/evanphx/json-patch v5.8.1+incompatible
+	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/go-logr/logr v1.4.1
 	github.com/onsi/gomega v1.31.1
 	github.com/openshift/api v0.0.0-20231122212525-40c7e9bd69ba
