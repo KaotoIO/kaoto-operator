@@ -16,6 +16,11 @@ on:
         description: |
           Define the operator version
         required: true
+      replace_operator_version:
+        type: string
+        description: |
+          Define the operator version to replace
+        required: true
 
 jobs:
 
@@ -42,6 +47,12 @@ jobs:
           else
             echo "WARNING: No changes were detected."
           fi
+
+      - name: "🔧 Enrich Bundle"
+        shell: bash
+        run: |
+          cd bundle/manifests
+          echo "  replaces: kaoto-operator.v${{ github.event.inputs.replace_operator_version }}" >> kaoto-operator.clusterserviceversion.yaml         
 
       - name: "🔧 Tar bundle"
         shell: bash
