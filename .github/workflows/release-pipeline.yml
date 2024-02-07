@@ -97,3 +97,51 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           artifacts: "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" 
+          
+  open-k8s-operator-pr:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs:
+      - version-update
+      - tag-and-release
+    steps:
+      
+      - name: "Checkout k8s-operator project"
+        uses: actions/checkout@v4
+        with:
+          repository: kaotoIO/community-operators
+          token: ${{ secrets.PR_TOKEN }}
+          ref: main
+
+      - name: "🛰️ Download UI Dist"
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-${{ github.event.inputs.operator_version }}.tgz
+          path: "${{ runner.temp }}"
+          
+      - name: "Create PR for k8s-operators"
+        env:
+          BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
+          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+        run: |
+          
+          echo ""
+          echo "branch        : $BRANCH_NAME"
+          echo ""
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+          git remote add upstream git@github.com:k8s-operatorhub/community-operators.git
+          git pull --rebase upstream main
+
+          git checkout -b ${BRANCH_NAME}
+          
+          tar -xzf "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" -C operators/kaoto-operator/${{ github.event.inputs.operator_version }}
+          git add operators/kaoto-operator/${{ github.event.inputs.operator_version }}
+          git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
+          
+          git push -u origin ${BRANCH_NAME}
+
+
