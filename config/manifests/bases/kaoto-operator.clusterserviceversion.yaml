@@ -7,6 +7,9 @@ metadata:
     categories: Developer Tools, Integration & Delivery
     certified: "false"
     containerImage: ""
+    description: Integration Editor for Apache Camel
+    repository: https://github.com/KaotoIO/kaoto-operator
+    support: contact@kaoto.io
   name: kaoto-operator.v0.0.0
   namespace: placeholder
 spec:
