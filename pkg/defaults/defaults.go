@@ -10,5 +10,5 @@ const (
 )
 
 var (
-	KaotoAppImage = "quay.io/kaotoio/kaoto-app:main"
+	KaotoAppImage = "quay.io/kaotoio/kaoto-app:stable"
 )
