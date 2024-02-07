@@ -2,10 +2,6 @@ name: E2E
 
 on:
   workflow_call:
-    inputs:
-      standalone-image:
-        required: true
-        type: string
 
 jobs:
   images:
@@ -22,8 +18,6 @@ jobs:
           check-latest: true
       - name: "Publish Image"
         id: "publish"
-        env:
-          KAOTO_STANDALONE_IMAGE: ${{ inputs.standalone-image }}
         run: |
           export UUID=$(uuidgen)
           export IMG="ttl.sh/${UUID}-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}:1h"

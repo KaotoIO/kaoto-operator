@@ -29,5 +29,3 @@ jobs:
     uses: ./.github/workflows/e2e.yml
     needs:
       - build
-    with:
-      standalone-image: "quay.io/kaotoio/kaoto-app:main"
