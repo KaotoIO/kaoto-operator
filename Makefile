@@ -61,7 +61,7 @@ endif
 IMG ?= ${IMAGE_TAG_BASE}:${IMG_VERSION}
 
 # Kaoto image that is installed by the operator
-KAOTO_APP_IMAGE ?= quay.io/kaotoio/kaoto-app:main
+KAOTO_APP_IMAGE ?= quay.io/kaotoio/kaoto-app:stable
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
