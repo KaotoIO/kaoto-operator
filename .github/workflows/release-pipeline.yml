@@ -137,7 +137,8 @@ jobs:
           git pull --rebase upstream main
 
           git checkout -b ${BRANCH_NAME}
-          
+
+          mkdir -p operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           tar -xzf "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" -C operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           git add operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
