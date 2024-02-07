@@ -133,22 +133,15 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
+          git remote add upstream git@github.com:k8s-operatorhub/community-operators.git
+          git pull --rebase upstream main
+
           git checkout -b ${BRANCH_NAME}
           
           tar -xzf "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" -C operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           git add operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
           
-          git reset --hard
           git push -u origin ${BRANCH_NAME}
-
-          sleep 15
-
-          gh config set prompt disabled
-
-          gh pr create \
-            --fill \
-            --base main \
-            --title "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
 
 
