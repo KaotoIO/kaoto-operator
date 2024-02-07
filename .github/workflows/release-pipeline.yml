@@ -21,6 +21,12 @@ on:
         description: |
           Define the operator version to replace
         required: true
+      supported_openshift_range:
+        type: string
+        description: |
+          The supported Openshift version range. This could be a single version, like for example v4.13 or v4.9-v4.13 as a range
+        required: false
+        default: v4.13
 
 jobs:
 
@@ -98,7 +104,7 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           artifacts: "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" 
           
-  open-k8s-operator-pr:
+  prepare-k8s-operator-branch:
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -120,7 +126,7 @@ jobs:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
           
-      - name: "Create PR for k8s-operators"
+      - name: "Create and prepare branch for k8s-operator"
         env:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
           GH_TOKEN: ${{ secrets.PR_TOKEN }}
@@ -145,4 +151,50 @@ jobs:
           
           git push -u origin ${BRANCH_NAME}
 
+  prepare-openshift-operator-branch:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs:
+      - version-update
+      - tag-and-release
+    steps:
+      
+      - name: "Checkout k8s-operator project"
+        uses: actions/checkout@v4
+        with:
+          repository: kaotoIO/community-operators-prod
+          token: ${{ secrets.PR_TOKEN }}
+          ref: main
 
+      - name: "🛰️ Download UI Dist"
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-${{ github.event.inputs.operator_version }}.tgz
+          path: "${{ runner.temp }}"
+          
+      - name: "Create and prepare branch for k8s-operator"
+        env:
+          BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
+          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+        run: |
+          
+          echo ""
+          echo "branch        : $BRANCH_NAME"
+          echo ""
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+          git remote add upstream https://github.com/KaotoIO/community-operators-prod.git
+          git pull --rebase upstream main
+
+          git checkout -b ${BRANCH_NAME}
+
+          mkdir -p operators/kaoto-operator/${{ github.event.inputs.operator_version }}
+          tar -xzf "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" -C operators/kaoto-operator/${{ github.event.inputs.operator_version }}
+          echo "  com.redhat.openshift.versions: ${{ github.event.inputs.supported_openshift_range }}" >> operators/kaoto-operator/metadata/annotations.yaml     
+          git add operators/kaoto-operator/${{ github.event.inputs.operator_version }}
+          git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
+          
+          git push -u origin ${BRANCH_NAME}
