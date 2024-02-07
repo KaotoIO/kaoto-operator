@@ -139,7 +139,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-          git remote add upstream https://github.com/KaotoIO/community-operators.git
+          git remote add upstream https://github.com/k8s-operatorhub/community-operators.git
           git pull --rebase upstream main
 
           git checkout -b ${BRANCH_NAME}
@@ -186,7 +186,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-          git remote add upstream https://github.com/KaotoIO/community-operators-prod.git
+          git remote add upstream https://github.com/redhat-openshift-ecosystem/community-operators-prod.git
           git pull --rebase upstream main
 
           git checkout -b ${BRANCH_NAME}
