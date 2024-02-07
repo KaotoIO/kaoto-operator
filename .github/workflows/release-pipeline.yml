@@ -193,7 +193,7 @@ jobs:
 
           mkdir -p operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           tar -xzf "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" -C operators/kaoto-operator/${{ github.event.inputs.operator_version }}
-          echo "  com.redhat.openshift.versions: ${{ github.event.inputs.supported_openshift_range }}" >> operators/kaoto-operator/metadata/annotations.yaml     
+          echo "  com.redhat.openshift.versions: ${{ github.event.inputs.supported_openshift_range }}" >> operators/kaoto-operator/${{ github.event.inputs.operator_version }}/metadata/annotations.yaml     
           git add operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
           
