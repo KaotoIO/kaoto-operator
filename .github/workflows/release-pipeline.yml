@@ -166,7 +166,7 @@ jobs:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
           
-      - name: "Create and prepare branch for k8s-operator"
+      - name: "Create, prepare branch and open PR for k8s-operator"
         env:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
           GH_TOKEN: ${{ secrets.PR_TOKEN }}
@@ -190,6 +190,7 @@ jobs:
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
           
           git push -u origin ${BRANCH_NAME}
+          gh pr create --title "operator kaoto (${{ github.event.inputs.operator_version }})" -F ../.github/operatorhub/community-operators -R k8s-operatorhub/community-operators
 
   prepare-openshift-operator-branch:
     permissions:
@@ -207,13 +208,13 @@ jobs:
           token: ${{ secrets.PR_TOKEN }}
           ref: main
 
-      - name: "🛰️ Download Bundle"
+      - name: "🛰️ Download UI Dist"
         uses: actions/download-artifact@v4
         with:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
           
-      - name: "Create and prepare branch for k8s-operator"
+      - name: "Create, prepare branch and open PR for community-operators-prod"
         env:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
           GH_TOKEN: ${{ secrets.PR_TOKEN }}
@@ -238,3 +239,4 @@ jobs:
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
           
           git push -u origin ${BRANCH_NAME}
+          gh pr create --title "operator kaoto (${{ github.event.inputs.operator_version }})" -F ../.github/openshift/community-operators-prod -R redhat-openshift-ecosystem/community-operators-prod
