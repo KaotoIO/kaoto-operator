@@ -70,7 +70,7 @@ jobs:
           make crane
       - name: "Build Container image"
         run: |
-          export IMAGE_DIGEST=$(crane digest quay.io/kaotoio/kaoto-app:stable)
+          export IMAGE_DIGEST=$(bin/crane digest quay.io/kaotoio/kaoto-app:stable)
           export KAOTO_APP_IMAGE="quay.io/kaotoio/kaoto-app@${IMAGE_DIGEST}"
           make docker-build 
           make docker-push
