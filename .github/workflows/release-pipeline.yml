@@ -160,6 +160,7 @@ jobs:
         with:
           repository: kaotoIO/community-operators
           token: ${{ secrets.PR_TOKEN }}
+          path: community-operators
           ref: main
 
       - name: "🛰️ Download Bundle"
@@ -173,7 +174,8 @@ jobs:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
           GH_TOKEN: ${{ secrets.PR_TOKEN }}
         run: |
-          
+
+          pushd community-operators
           echo ""
           echo "branch        : $BRANCH_NAME"
           echo ""
@@ -193,6 +195,7 @@ jobs:
           
           git push -u origin ${BRANCH_NAME}
           gh pr create --title "operator kaoto (${{ github.event.inputs.operator_version }})" -F ../.github/operatorhub/community-operators -R k8s-operatorhub/community-operators
+          popd
 
   prepare-openshift-operator-branch:
     permissions:
@@ -211,6 +214,7 @@ jobs:
         with:
           repository: kaotoIO/community-operators-prod
           token: ${{ secrets.PR_TOKEN }}
+          path: community-operators-prod
           ref: main
 
       - name: "🛰️ Download UI Dist"
@@ -224,7 +228,8 @@ jobs:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
           GH_TOKEN: ${{ secrets.PR_TOKEN }}
         run: |
-          
+
+          pushd community-operators-prod
           echo ""
           echo "branch        : $BRANCH_NAME"
           echo ""
@@ -245,3 +250,4 @@ jobs:
           
           git push -u origin ${BRANCH_NAME}
           gh pr create --title "operator kaoto (${{ github.event.inputs.operator_version }})" -F ../.github/openshift/community-operators-prod -R redhat-openshift-ecosystem/community-operators-prod
+          popd
