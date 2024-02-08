@@ -84,16 +84,12 @@ jobs:
       - name: "Build OLM bundle"
         run: |
           make bundle
-      - name: Commit 
+      - name: Checking Diff 
         run: |
           if [[ `git status --porcelain` ]]; then
             echo "OK: Changes detected."            
-            git config user.name github-actions[bot]
-            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
             echo "OK: Showing changes."
             git diff
-            git commit -am "Align repository"
-            git push
           else
             echo "WARNING: No changes were detected."
           fi
