@@ -239,4 +239,5 @@ jobs:
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
           
           git push -u origin ${BRANCH_NAME}
+          pwd
           gh pr create --title "operator kaoto (${{ github.event.inputs.operator_version }})" -F ../.github/openshift/community-operators-prod -R redhat-openshift-ecosystem/community-operators-prod
