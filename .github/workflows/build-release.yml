@@ -13,7 +13,6 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       version: "${{ github.ref_name }}"
-      standalone-image: "quay.io/kaotoio/kaoto-app:main"
       olm: false
       tag: "${{ github.ref_name }}"
       latest: false

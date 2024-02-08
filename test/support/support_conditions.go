@@ -30,3 +30,9 @@ func ConditionStatus[T conditionType](conditionType T) func(any) corev1.Conditio
 		return corev1.ConditionUnknown
 	}
 }
+
+func ContainerImage(index int) func(*appsv1.Deployment) string {
+	return func(deployment *appsv1.Deployment) string {
+		return deployment.Spec.Template.Spec.Containers[index].Image
+	}
+}

@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -61,6 +62,8 @@ func TestDesignerDeploy(t *testing.T) {
 				Not(BeNil()))
 			test.Eventually(Deployment(test, kd), TestTimeoutLong).Should(
 				WithTransform(ConditionStatus(appsv1.DeploymentAvailable), Equal(corev1.ConditionTrue)))
+			test.Eventually(Deployment(test, kd), TestTimeoutLong).Should(
+				WithTransform(ContainerImage(0), Equal(defaults.KaotoAppImage)))
 
 			if kd.Spec.Ingress == nil {
 				test.Expect(GetIngress(test, kd)).Should(

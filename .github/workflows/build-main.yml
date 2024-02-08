@@ -13,15 +13,12 @@ concurrency:
 jobs:
   e2e:
     uses: ./.github/workflows/e2e.yml
-    with:
-      standalone-image: "quay.io/kaotoio/kaoto-app:main"
   deploy:
     needs:
       - e2e
     uses: ./.github/workflows/build-and-push.yml
     with:
       version: "${{ github.ref_name }}-${{ github.sha }}"
-      standalone-image: "quay.io/kaotoio/kaoto-app:main"
       olm: false
       tag: main
       latest: true

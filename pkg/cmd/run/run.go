@@ -1,8 +1,12 @@
 package run
 
 import (
+	"fmt"
+	"runtime"
+
 	"github.com/kaotoIO/kaoto-operator/internal/controller/designer"
 	"github.com/kaotoIO/kaoto-operator/pkg/controller"
+	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,6 +21,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func init() {
@@ -41,6 +46,11 @@ func NewRunCmd() *cobra.Command {
 		Short: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Start(options, func(manager manager.Manager, opts controller.Options) error {
+				l := ctrl.Log.WithName("run")
+				l.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
+				l.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
+				l.Info(fmt.Sprintf("Kaoto App Image: %s", defaults.KaotoAppImage))
+
 				selector, err := designer.AppSelector()
 				if err != nil {
 					return errors.Wrap(err, "unable to compute cache's watch selector")

@@ -9,9 +9,6 @@ on:
       latest:
         required: true
         type: boolean
-      standalone-image:
-        required: true
-        type: string
       olm:
         required: true
         type: boolean
@@ -40,8 +37,6 @@ jobs:
           go-version-file: 'go.mod'
           check-latest: true
       - name: "Build"
-        env:
-          KAOTO_STANDALONE_IMAGE: ${{ inputs.standalone-image }}
         run: make build
       - name: "Test"
         run: make test
@@ -70,9 +65,14 @@ jobs:
 
           echo "VERSION=${C_VERSION}" >> $GITHUB_ENV
           echo "IMG_VERSION=${C_VERSION}" >> $GITHUB_ENV
+      - name: "Set Up Crane"
+        run: |
+          make crane
       - name: "Build Container image"
         run: |
-          make docker-build
+          export IMAGE_DIGEST=$(crane digest quay.io/kaotoio/kaoto-app:stable)
+          export KAOTO_APP_IMAGE="quay.io/kaotoio/kaoto-app@${IMAGE_DIGEST}"
+          make docker-build 
           make docker-push
       - name: "Tag lates Container image"
         if: ${{ inputs.latest }}
