@@ -159,7 +159,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: kaotoIO/community-operators
-          token: ${{ secrets.PR_TOKEN }}
+          token: ${{ secrets.KAOTO-CI-TOKEN }}
           path: community-operators
           ref: main
 
@@ -172,7 +172,7 @@ jobs:
       - name: "Create, prepare branch and open PR for k8s-operator"
         env:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
-          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.KAOTO-CI-TOKEN }}
         run: |
 
           pushd community-operators
@@ -213,7 +213,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: kaotoIO/community-operators-prod
-          token: ${{ secrets.PR_TOKEN }}
+          token: ${{ secrets.KAOTO-CI-TOKEN }}
           path: community-operators-prod
           ref: main
 
@@ -226,7 +226,7 @@ jobs:
       - name: "Create, prepare branch and open PR for community-operators-prod"
         env:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
-          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.KAOTO-CI-TOKEN }}
         run: |
 
           pushd community-operators-prod
