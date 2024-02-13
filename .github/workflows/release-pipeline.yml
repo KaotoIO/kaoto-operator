@@ -186,6 +186,7 @@ jobs:
           git remote add upstream https://github.com/k8s-operatorhub/community-operators.git
           git pull --rebase upstream main
 
+          git push -d origin ${BRANCH_NAME} || echo 'Skip branch deletion'
           git checkout -b ${BRANCH_NAME}
 
           mkdir -p operators/kaoto-operator/${{ github.event.inputs.operator_version }}
@@ -240,6 +241,7 @@ jobs:
           git remote add upstream https://github.com/redhat-openshift-ecosystem/community-operators-prod.git
           git pull --rebase upstream main
 
+          git push -d origin ${BRANCH_NAME} || echo 'Skip branch deletion'
           git checkout -b ${BRANCH_NAME}
 
           mkdir -p operators/kaoto-operator/${{ github.event.inputs.operator_version }}
