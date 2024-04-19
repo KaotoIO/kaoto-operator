@@ -1,6 +1,7 @@
 module github.com/kaotoIO/kaoto-operator
 
 go 1.21
+toolchain go1.22.2
 
 require (
 	github.com/evanphx/json-patch v5.9.0+incompatible
@@ -14,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/multierr v1.11.0
 	k8s.io/api v0.29.4
-	k8s.io/apimachinery v0.29.4
+	k8s.io/apimachinery v0.30.0
 	k8s.io/client-go v0.29.4
 	k8s.io/klog/v2 v2.120.1
 	sigs.k8s.io/controller-runtime v0.17.3
@@ -70,7 +71,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.29.2 // indirect
 	k8s.io/component-base v0.29.2 // indirect
-	k8s.io/kube-openapi v0.0.0-20231113174909-778a5567bc1e // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20231121161247-cf03d44ff3cf // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
