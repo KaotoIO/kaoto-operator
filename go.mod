@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/go-logr/logr v1.4.1
-	github.com/onsi/gomega v1.33.0
+	github.com/onsi/gomega v1.33.1
 	github.com/openshift/api v0.0.0-20231122212525-40c7e9bd69ba
 	github.com/openshift/client-go v0.0.0-20231121143148-910ca30a1a9a
 	github.com/pkg/errors v0.9.1
@@ -56,10 +56,10 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
-	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/term v0.18.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.4.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
