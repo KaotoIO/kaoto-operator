@@ -158,7 +158,7 @@ jobs:
       - name: "Checkout k8s-operator project"
         uses: actions/checkout@v4
         with:
-          repository: kaotoIO/community-operators
+          repository: KaotoIO/community-operators
           token: ${{ secrets.KAOTO_CI_TOKEN }}
           path: community-operators
           ref: main
@@ -213,7 +213,7 @@ jobs:
       - name: "Checkout k8s-operator project"
         uses: actions/checkout@v4
         with:
-          repository: kaotoIO/community-operators-prod
+          repository: KaotoIO/community-operators-prod
           token: ${{ secrets.KAOTO_CI_TOKEN }}
           path: community-operators-prod
           ref: main
