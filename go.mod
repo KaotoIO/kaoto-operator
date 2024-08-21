@@ -10,7 +10,7 @@ require (
 	github.com/openshift/client-go v0.0.0-20231121143148-910ca30a1a9a
 	github.com/pkg/errors v0.9.1
 	github.com/rs/xid v1.5.0
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/multierr v1.11.0
 	k8s.io/api v0.29.4
