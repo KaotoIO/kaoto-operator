@@ -1,8 +1,9 @@
 package e2e
 
 import (
-	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
 	"testing"
+
+	"github.com/kaotoIO/kaoto-operator/pkg/defaults"
 
 	corev1 "k8s.io/api/core/v1"
 
