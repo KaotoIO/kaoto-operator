@@ -11,7 +11,7 @@ require (
 	github.com/openshift/api v0.0.0-20231122212525-40c7e9bd69ba
 	github.com/openshift/client-go v0.0.0-20231121143148-910ca30a1a9a
 	github.com/pkg/errors v0.9.1
-	github.com/rs/xid v1.5.0
+	github.com/rs/xid v1.6.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/multierr v1.11.0
