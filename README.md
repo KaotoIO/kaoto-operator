@@ -35,8 +35,8 @@ Multiresource yaml files to deploy to plain kubernetes.
 ### Plain Kubernetes (Minikube)
 - Install and run a Minikube instance with `ingress` addon enabled. 
 - Install Kaoto from the multi-resource yaml 
-  ```kubectl apply -k https://github.com/KaotoIO/kaoto-operator//config/standalone``` 
-  - this will create `kaoto-system` namespace and install Kaoto Operatorand 
+  ```kubectl apply -k https://github.com/KaotoIO/kaoto-operator/config/standalone``` 
+  - this will create `kaoto-system` namespace and install Kaoto Operator 
 - Create sample Kaoto CR
   ```kubectl apply -f https://raw.githubusercontent.com/KaotoIO/kaoto-operator/main/config/samples/designer.yaml```
 - Waith the the ingrees admits the endoint
@@ -54,7 +54,7 @@ Multiresource yaml files to deploy to plain kubernetes.
 ## Local development
 
 ### Run Operator inside the cluster
-1. Start minikube win ingress controller enabled: `minikube start --addons ingress`
+1. Start minikube with ingress controller enabled: `minikube start --addons ingress`
 2. Point docker to minikube internal registry: `eval $(minikube -p minikube docker-env)`
 3. Build the Operator: `make build`
 4. Build the Operator Image: `make docker-build`
