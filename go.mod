@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/evanphx/json-patch v5.9.0+incompatible
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/onsi/gomega v1.37.0
 	github.com/openshift/api v0.0.0-20231122212525-40c7e9bd69ba
 	github.com/openshift/client-go v0.0.0-20231121143148-910ca30a1a9a
