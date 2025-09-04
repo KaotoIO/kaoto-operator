@@ -32,7 +32,7 @@ jobs:
         with:
           ref: ${{ inputs.tag }}
       - name: "Set up Go"
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
           check-latest: true
@@ -48,7 +48,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v5
       - name: "Set up Go"
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
           check-latest: true
