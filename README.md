@@ -104,22 +104,27 @@ kubectl apply -f config/samples/designer.yaml
 ```
 
 #### Option 2: Deploy via OLM Bundle
-1. **Install OLM (if not present):**
+1. **Create namespace:**
+   ```bash
+   kubectl create namespace kaoto-system
+   ```
+
+2. **Install OLM (if not present):**
    ```bash
    ./bin/operator-sdk olm install
    ```
 
-2. **Deploy bundle using operator-sdk:**
+3. **Deploy bundle using operator-sdk:**
    ```bash
-   ./bin/operator-sdk run bundle ${IMAGE_TAG_BASE}-bundle:v${VERSION}
+   ./bin/operator-sdk run bundle ${IMAGE_TAG_BASE}-bundle:v${VERSION} --namespace kaoto-system
    ```
 
-3. **Create Kaoto instance:**
+4. **Create Kaoto instance:**
    ```bash
    kubectl apply -f config/samples/designer.yaml
    ```
 
-4. **Cleanup bundle (when done):**
+5. **Cleanup bundle (when done):**
    ```bash
    ./bin/operator-sdk cleanup kaoto-operator
    ```
