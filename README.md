@@ -67,3 +67,59 @@ Multiresource yaml files to deploy to plain kubernetes.
 2. Run operator locally: `make run/local`
 3. Create sample Kaoto CR: `kubectl apply -f config/samples/designer.yaml`
 4. (Optional) Undeploy Kaoto: `kubectl delete kaoto kaoto-demo`
+
+## Build and Push to Custom Registry
+
+To build and push the operator and bundle images to your own registry:
+
+### Prerequisites
+- Docker/Podman logged into your registry
+- Operator SDK will be automatically installed via `make bundle`
+
+### Build Process
+1. **Set environment variables:**
+   ```bash
+   export MY_REGISTRY="your-registry.com"
+   export MY_REPO="your-username/kaoto"
+   export IMAGE_TAG_BASE="${MY_REGISTRY}/${MY_REPO}-operator"
+   export VERSION="0.0.5"
+   ```
+
+2. **Generate bundle:**
+   ```bash
+   IMG=${IMAGE_TAG_BASE}:latest VERSION=${VERSION} make bundle
+   ```
+
+3. **Build and push operator and bundle images:**
+   ```bash
+   IMG=${IMAGE_TAG_BASE}:latest BUNDLE_IMG=${IMAGE_TAG_BASE}-bundle:v${VERSION} make docker-build docker-push bundle-build bundle-push
+   ```
+
+### Deploy Options
+
+#### Option 1: Direct Deployment
+```bash
+IMG=${IMAGE_TAG_BASE}:latest make deploy
+kubectl apply -f config/samples/designer.yaml
+```
+
+#### Option 2: Deploy via OLM Bundle
+1. **Install OLM (if not present):**
+   ```bash
+   ./bin/operator-sdk olm install
+   ```
+
+2. **Deploy bundle using operator-sdk:**
+   ```bash
+   ./bin/operator-sdk run bundle ${IMAGE_TAG_BASE}-bundle:v${VERSION}
+   ```
+
+3. **Create Kaoto instance:**
+   ```bash
+   kubectl apply -f config/samples/designer.yaml
+   ```
+
+4. **Cleanup bundle (when done):**
+   ```bash
+   ./bin/operator-sdk cleanup kaoto-operator
+   ```
