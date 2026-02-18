@@ -123,7 +123,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: "🛰️ Download Bundle"
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
@@ -164,7 +164,7 @@ jobs:
           ref: main
 
       - name: "🛰️ Download Bundle"
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
@@ -219,7 +219,7 @@ jobs:
           ref: main
 
       - name: "🛰️ Download UI Dist"
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
