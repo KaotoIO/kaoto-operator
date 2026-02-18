@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: "Build"
         run: make build
       - name: "Test"
@@ -120,7 +120,7 @@ jobs:
     needs:
       - build-and-push
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: "🛰️ Download Bundle"
         uses: actions/download-artifact@v5
@@ -153,10 +153,10 @@ jobs:
       - tag-and-release
     steps:
       - name: "Checkout Operarot"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         
       - name: "Checkout k8s-operator project"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: KaotoIO/community-operators
           token: ${{ secrets.KAOTO_CI_TOKEN }}
@@ -208,10 +208,10 @@ jobs:
     steps:
 
       - name: "Checkout Operarot"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: "Checkout k8s-operator project"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: KaotoIO/community-operators-prod
           token: ${{ secrets.KAOTO_CI_TOKEN }}
