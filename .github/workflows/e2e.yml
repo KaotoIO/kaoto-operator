@@ -35,7 +35,7 @@ jobs:
     strategy:
       matrix:
         kubernetes-version:
-          - "1.27.3"
+          - "1.32.2"
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
@@ -47,8 +47,7 @@ jobs:
       - name: 'SetUp KinD'
         uses: container-tools/kind-action@v2
         with:
-          version: "v0.20.0"
-          kubectl_version: v${{ matrix.kubernetes-version }}
+          version: "v0.27.0"
           registry: false
           node_image: kindest/node:v${{ matrix.kubernetes-version }}
           config: test/e2e/kind.yaml

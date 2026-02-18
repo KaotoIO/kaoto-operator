@@ -18,8 +18,8 @@ limitations under the License.
 package versioned
 
 import (
-	"fmt"
-	"net/http"
+	fmt "fmt"
+	http "net/http"
 
 	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned/typed/designer/v1alpha1"
 	discovery "k8s.io/client-go/discovery"

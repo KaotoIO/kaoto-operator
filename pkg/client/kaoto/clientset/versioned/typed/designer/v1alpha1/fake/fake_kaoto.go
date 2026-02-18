@@ -18,171 +18,31 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-	json "encoding/json"
-	"fmt"
-
 	v1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/applyconfiguration/designer/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	typeddesignerv1alpha1 "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/clientset/versioned/typed/designer/v1alpha1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakeKaotoes implements KaotoInterface
-type FakeKaotoes struct {
+// fakeKaotoes implements KaotoInterface
+type fakeKaotoes struct {
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Kaoto, *v1alpha1.KaotoList, *designerv1alpha1.KaotoApplyConfiguration]
 	Fake *FakeDesignerV1alpha1
-	ns   string
 }
 
-var kaotoesResource = v1alpha1.SchemeGroupVersion.WithResource("kaotoes")
-
-var kaotoesKind = v1alpha1.SchemeGroupVersion.WithKind("Kaoto")
-
-// Get takes name of the kaoto, and returns the corresponding kaoto object, and an error if there is any.
-func (c *FakeKaotoes) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Kaoto, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(kaotoesResource, c.ns, name), &v1alpha1.Kaoto{})
-
-	if obj == nil {
-		return nil, err
+func newFakeKaotoes(fake *FakeDesignerV1alpha1, namespace string) typeddesignerv1alpha1.KaotoInterface {
+	return &fakeKaotoes{
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Kaoto, *v1alpha1.KaotoList, *designerv1alpha1.KaotoApplyConfiguration](
+			fake.Fake,
+			namespace,
+			v1alpha1.SchemeGroupVersion.WithResource("kaotoes"),
+			v1alpha1.SchemeGroupVersion.WithKind("Kaoto"),
+			func() *v1alpha1.Kaoto { return &v1alpha1.Kaoto{} },
+			func() *v1alpha1.KaotoList { return &v1alpha1.KaotoList{} },
+			func(dst, src *v1alpha1.KaotoList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha1.KaotoList) []*v1alpha1.Kaoto { return gentype.ToPointerSlice(list.Items) },
+			func(list *v1alpha1.KaotoList, items []*v1alpha1.Kaoto) { list.Items = gentype.FromPointerSlice(items) },
+		),
+		fake,
 	}
-	return obj.(*v1alpha1.Kaoto), err
-}
-
-// List takes label and field selectors, and returns the list of Kaotoes that match those selectors.
-func (c *FakeKaotoes) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.KaotoList, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewListAction(kaotoesResource, kaotoesKind, c.ns, opts), &v1alpha1.KaotoList{})
-
-	if obj == nil {
-		return nil, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha1.KaotoList{ListMeta: obj.(*v1alpha1.KaotoList).ListMeta}
-	for _, item := range obj.(*v1alpha1.KaotoList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested kaotoes.
-func (c *FakeKaotoes) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(kaotoesResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a kaoto and creates it.  Returns the server's representation of the kaoto, and an error, if there is any.
-func (c *FakeKaotoes) Create(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.CreateOptions) (result *v1alpha1.Kaoto, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(kaotoesResource, c.ns, kaoto), &v1alpha1.Kaoto{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Kaoto), err
-}
-
-// Update takes the representation of a kaoto and updates it. Returns the server's representation of the kaoto, and an error, if there is any.
-func (c *FakeKaotoes) Update(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.UpdateOptions) (result *v1alpha1.Kaoto, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(kaotoesResource, c.ns, kaoto), &v1alpha1.Kaoto{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Kaoto), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeKaotoes) UpdateStatus(ctx context.Context, kaoto *v1alpha1.Kaoto, opts v1.UpdateOptions) (*v1alpha1.Kaoto, error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(kaotoesResource, "status", c.ns, kaoto), &v1alpha1.Kaoto{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Kaoto), err
-}
-
-// Delete takes name of the kaoto and deletes it. Returns an error if one occurs.
-func (c *FakeKaotoes) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(kaotoesResource, c.ns, name, opts), &v1alpha1.Kaoto{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeKaotoes) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(kaotoesResource, c.ns, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha1.KaotoList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched kaoto.
-func (c *FakeKaotoes) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Kaoto, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(kaotoesResource, c.ns, name, pt, data, subresources...), &v1alpha1.Kaoto{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Kaoto), err
-}
-
-// Apply takes the given apply declarative configuration, applies it and returns the applied kaoto.
-func (c *FakeKaotoes) Apply(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Kaoto, err error) {
-	if kaoto == nil {
-		return nil, fmt.Errorf("kaoto provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(kaoto)
-	if err != nil {
-		return nil, err
-	}
-	name := kaoto.Name
-	if name == nil {
-		return nil, fmt.Errorf("kaoto.Name must be provided to Apply")
-	}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(kaotoesResource, c.ns, *name, types.ApplyPatchType, data), &v1alpha1.Kaoto{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Kaoto), err
-}
-
-// ApplyStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *FakeKaotoes) ApplyStatus(ctx context.Context, kaoto *designerv1alpha1.KaotoApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Kaoto, err error) {
-	if kaoto == nil {
-		return nil, fmt.Errorf("kaoto provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(kaoto)
-	if err != nil {
-		return nil, err
-	}
-	name := kaoto.Name
-	if name == nil {
-		return nil, fmt.Errorf("kaoto.Name must be provided to Apply")
-	}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(kaotoesResource, c.ns, *name, types.ApplyPatchType, data, "status"), &v1alpha1.Kaoto{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Kaoto), err
 }

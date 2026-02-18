@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/tools/cache"
+	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // KaotoLister helps list Kaotoes.
@@ -29,7 +29,7 @@ import (
 type KaotoLister interface {
 	// List lists all Kaotoes in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error)
+	List(selector labels.Selector) (ret []*designerv1alpha1.Kaoto, err error)
 	// Kaotoes returns an object that can list and get Kaotoes.
 	Kaotoes(namespace string) KaotoNamespaceLister
 	KaotoListerExpansion
@@ -37,25 +37,17 @@ type KaotoLister interface {
 
 // kaotoLister implements the KaotoLister interface.
 type kaotoLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*designerv1alpha1.Kaoto]
 }
 
 // NewKaotoLister returns a new KaotoLister.
 func NewKaotoLister(indexer cache.Indexer) KaotoLister {
-	return &kaotoLister{indexer: indexer}
-}
-
-// List lists all Kaotoes in the indexer.
-func (s *kaotoLister) List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.Kaoto))
-	})
-	return ret, err
+	return &kaotoLister{listers.New[*designerv1alpha1.Kaoto](indexer, designerv1alpha1.Resource("kaoto"))}
 }
 
 // Kaotoes returns an object that can list and get Kaotoes.
 func (s *kaotoLister) Kaotoes(namespace string) KaotoNamespaceLister {
-	return kaotoNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return kaotoNamespaceLister{listers.NewNamespaced[*designerv1alpha1.Kaoto](s.ResourceIndexer, namespace)}
 }
 
 // KaotoNamespaceLister helps list and get Kaotoes.
@@ -63,36 +55,15 @@ func (s *kaotoLister) Kaotoes(namespace string) KaotoNamespaceLister {
 type KaotoNamespaceLister interface {
 	// List lists all Kaotoes in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error)
+	List(selector labels.Selector) (ret []*designerv1alpha1.Kaoto, err error)
 	// Get retrieves the Kaoto from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.Kaoto, error)
+	Get(name string) (*designerv1alpha1.Kaoto, error)
 	KaotoNamespaceListerExpansion
 }
 
 // kaotoNamespaceLister implements the KaotoNamespaceLister
 // interface.
 type kaotoNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all Kaotoes in the indexer for a given namespace.
-func (s kaotoNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.Kaoto, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.Kaoto))
-	})
-	return ret, err
-}
-
-// Get retrieves the Kaoto from the indexer for a given namespace and name.
-func (s kaotoNamespaceLister) Get(name string) (*v1alpha1.Kaoto, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("kaoto"), name)
-	}
-	return obj.(*v1alpha1.Kaoto), nil
+	listers.ResourceIndexer[*designerv1alpha1.Kaoto]
 }

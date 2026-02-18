@@ -20,7 +20,10 @@ package applyconfiguration
 import (
 	v1alpha1 "github.com/kaotoIO/kaoto-operator/api/designer/v1alpha1"
 	designerv1alpha1 "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/applyconfiguration/designer/v1alpha1"
+	internal "github.com/kaotoIO/kaoto-operator/pkg/client/kaoto/applyconfiguration/internal"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
 )
 
 // ForKind returns an apply configuration type for the given GroupVersionKind, or nil if no
@@ -39,4 +42,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 
 	}
 	return nil
+}
+
+func NewTypeConverter(scheme *runtime.Scheme) managedfields.TypeConverter {
+	return managedfields.NewSchemeTypeConverter(scheme, internal.Parser())
 }

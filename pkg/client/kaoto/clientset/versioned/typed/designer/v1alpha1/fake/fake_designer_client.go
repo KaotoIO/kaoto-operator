@@ -28,7 +28,7 @@ type FakeDesignerV1alpha1 struct {
 }
 
 func (c *FakeDesignerV1alpha1) Kaotoes(namespace string) v1alpha1.KaotoInterface {
-	return &FakeKaotoes{c, namespace}
+	return newFakeKaotoes(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate
