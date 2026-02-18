@@ -48,7 +48,6 @@ jobs:
         uses: container-tools/kind-action@v2
         with:
           version: "v0.27.0"
-          kubectl_version: v${{ matrix.kubernetes-version }}
           registry: false
           node_image: kindest/node:v${{ matrix.kubernetes-version }}
           config: test/e2e/kind.yaml
