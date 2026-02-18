@@ -23,8 +23,10 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// KaotoApplyConfiguration represents an declarative configuration of the Kaoto type for use
+// KaotoApplyConfiguration represents a declarative configuration of the Kaoto type for use
 // with apply.
+//
+// Kaoto is the Schema for the kaotoes API.
 type KaotoApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -32,7 +34,7 @@ type KaotoApplyConfiguration struct {
 	Status                           *KaotoStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// Kaoto constructs an declarative configuration of the Kaoto type for use with
+// Kaoto constructs a declarative configuration of the Kaoto type for use with
 // apply.
 func Kaoto(name, namespace string) *KaotoApplyConfiguration {
 	b := &KaotoApplyConfiguration{}
@@ -43,11 +45,13 @@ func Kaoto(name, namespace string) *KaotoApplyConfiguration {
 	return b
 }
 
+func (b KaotoApplyConfiguration) IsApplyConfiguration() {}
+
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithKind(value string) *KaotoApplyConfiguration {
-	b.Kind = &value
+	b.TypeMetaApplyConfiguration.Kind = &value
 	return b
 }
 
@@ -55,7 +59,7 @@ func (b *KaotoApplyConfiguration) WithKind(value string) *KaotoApplyConfiguratio
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithAPIVersion(value string) *KaotoApplyConfiguration {
-	b.APIVersion = &value
+	b.TypeMetaApplyConfiguration.APIVersion = &value
 	return b
 }
 
@@ -64,7 +68,7 @@ func (b *KaotoApplyConfiguration) WithAPIVersion(value string) *KaotoApplyConfig
 // If called multiple times, the Name field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithName(value string) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.Name = &value
+	b.ObjectMetaApplyConfiguration.Name = &value
 	return b
 }
 
@@ -73,7 +77,7 @@ func (b *KaotoApplyConfiguration) WithName(value string) *KaotoApplyConfiguratio
 // If called multiple times, the GenerateName field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithGenerateName(value string) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.GenerateName = &value
+	b.ObjectMetaApplyConfiguration.GenerateName = &value
 	return b
 }
 
@@ -82,7 +86,7 @@ func (b *KaotoApplyConfiguration) WithGenerateName(value string) *KaotoApplyConf
 // If called multiple times, the Namespace field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithNamespace(value string) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.Namespace = &value
+	b.ObjectMetaApplyConfiguration.Namespace = &value
 	return b
 }
 
@@ -91,7 +95,7 @@ func (b *KaotoApplyConfiguration) WithNamespace(value string) *KaotoApplyConfigu
 // If called multiple times, the UID field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithUID(value types.UID) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.UID = &value
+	b.ObjectMetaApplyConfiguration.UID = &value
 	return b
 }
 
@@ -100,7 +104,7 @@ func (b *KaotoApplyConfiguration) WithUID(value types.UID) *KaotoApplyConfigurat
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithResourceVersion(value string) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.ResourceVersion = &value
+	b.ObjectMetaApplyConfiguration.ResourceVersion = &value
 	return b
 }
 
@@ -109,7 +113,7 @@ func (b *KaotoApplyConfiguration) WithResourceVersion(value string) *KaotoApplyC
 // If called multiple times, the Generation field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithGeneration(value int64) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.Generation = &value
+	b.ObjectMetaApplyConfiguration.Generation = &value
 	return b
 }
 
@@ -118,7 +122,7 @@ func (b *KaotoApplyConfiguration) WithGeneration(value int64) *KaotoApplyConfigu
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithCreationTimestamp(value metav1.Time) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.CreationTimestamp = &value
+	b.ObjectMetaApplyConfiguration.CreationTimestamp = &value
 	return b
 }
 
@@ -127,7 +131,7 @@ func (b *KaotoApplyConfiguration) WithCreationTimestamp(value metav1.Time) *Kaot
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.DeletionTimestamp = &value
+	b.ObjectMetaApplyConfiguration.DeletionTimestamp = &value
 	return b
 }
 
@@ -136,7 +140,7 @@ func (b *KaotoApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *Kaot
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
 func (b *KaotoApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	b.DeletionGracePeriodSeconds = &value
+	b.ObjectMetaApplyConfiguration.DeletionGracePeriodSeconds = &value
 	return b
 }
 
@@ -146,11 +150,11 @@ func (b *KaotoApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *K
 // overwriting an existing map entries in Labels field with the same key.
 func (b *KaotoApplyConfiguration) WithLabels(entries map[string]string) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	if b.Labels == nil && len(entries) > 0 {
-		b.Labels = make(map[string]string, len(entries))
+	if b.ObjectMetaApplyConfiguration.Labels == nil && len(entries) > 0 {
+		b.ObjectMetaApplyConfiguration.Labels = make(map[string]string, len(entries))
 	}
 	for k, v := range entries {
-		b.Labels[k] = v
+		b.ObjectMetaApplyConfiguration.Labels[k] = v
 	}
 	return b
 }
@@ -161,11 +165,11 @@ func (b *KaotoApplyConfiguration) WithLabels(entries map[string]string) *KaotoAp
 // overwriting an existing map entries in Annotations field with the same key.
 func (b *KaotoApplyConfiguration) WithAnnotations(entries map[string]string) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
-	if b.Annotations == nil && len(entries) > 0 {
-		b.Annotations = make(map[string]string, len(entries))
+	if b.ObjectMetaApplyConfiguration.Annotations == nil && len(entries) > 0 {
+		b.ObjectMetaApplyConfiguration.Annotations = make(map[string]string, len(entries))
 	}
 	for k, v := range entries {
-		b.Annotations[k] = v
+		b.ObjectMetaApplyConfiguration.Annotations[k] = v
 	}
 	return b
 }
@@ -179,7 +183,7 @@ func (b *KaotoApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferen
 		if values[i] == nil {
 			panic("nil value passed to WithOwnerReferences")
 		}
-		b.OwnerReferences = append(b.OwnerReferences, *values[i])
+		b.ObjectMetaApplyConfiguration.OwnerReferences = append(b.ObjectMetaApplyConfiguration.OwnerReferences, *values[i])
 	}
 	return b
 }
@@ -190,7 +194,7 @@ func (b *KaotoApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferen
 func (b *KaotoApplyConfiguration) WithFinalizers(values ...string) *KaotoApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
-		b.Finalizers = append(b.Finalizers, values[i])
+		b.ObjectMetaApplyConfiguration.Finalizers = append(b.ObjectMetaApplyConfiguration.Finalizers, values[i])
 	}
 	return b
 }
@@ -215,4 +219,26 @@ func (b *KaotoApplyConfiguration) WithSpec(value *KaotoSpecApplyConfiguration) *
 func (b *KaotoApplyConfiguration) WithStatus(value *KaotoStatusApplyConfiguration) *KaotoApplyConfiguration {
 	b.Status = value
 	return b
+}
+
+// GetKind retrieves the value of the Kind field in the declarative configuration.
+func (b *KaotoApplyConfiguration) GetKind() *string {
+	return b.TypeMetaApplyConfiguration.Kind
+}
+
+// GetAPIVersion retrieves the value of the APIVersion field in the declarative configuration.
+func (b *KaotoApplyConfiguration) GetAPIVersion() *string {
+	return b.TypeMetaApplyConfiguration.APIVersion
+}
+
+// GetName retrieves the value of the Name field in the declarative configuration.
+func (b *KaotoApplyConfiguration) GetName() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.ObjectMetaApplyConfiguration.Name
+}
+
+// GetNamespace retrieves the value of the Namespace field in the declarative configuration.
+func (b *KaotoApplyConfiguration) GetNamespace() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.ObjectMetaApplyConfiguration.Namespace
 }

@@ -17,14 +17,16 @@ limitations under the License.
 
 package v1alpha1
 
-// KaotoSpecApplyConfiguration represents an declarative configuration of the KaotoSpec type for use
+// KaotoSpecApplyConfiguration represents a declarative configuration of the KaotoSpec type for use
 // with apply.
+//
+// KaotoSpec defines the desired state of Kaoto.
 type KaotoSpecApplyConfiguration struct {
 	Image   *string                        `json:"image,omitempty"`
 	Ingress *IngressSpecApplyConfiguration `json:"ingress,omitempty"`
 }
 
-// KaotoSpecApplyConfiguration constructs an declarative configuration of the KaotoSpec type for use with
+// KaotoSpecApplyConfiguration constructs a declarative configuration of the KaotoSpec type for use with
 // apply.
 func KaotoSpec() *KaotoSpecApplyConfiguration {
 	return &KaotoSpecApplyConfiguration{}
