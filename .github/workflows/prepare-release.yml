@@ -1,0 +1,53 @@
+name: Prepare operator release
+
+on:
+  repository_dispatch:
+    types: [kaoto-release]
+
+jobs:
+  sync-forks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: "Generate GitHub App token"
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.KAOTO_RELEASE_APP_KEY }}
+          private-key: ${{ secrets.KAOTO_NPM_TOKEN }}
+          owner: KaotoIO
+          repositories: community-operators,community-operators-prod
+
+      - name: "Sync community-operators fork"
+        run: |
+          gh repo sync KaotoIO/community-operators --source k8s-operatorhub/community-operators --force
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: "Sync community-operators-prod fork"
+        run: |
+          gh repo sync KaotoIO/community-operators-prod --source redhat-openshift-ecosystem/community-operators-prod --force
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: "Open release tracking issue"
+        run: |
+          gh issue create \
+            --repo KaotoIO/kaoto-operator \
+            --title "Release operator for Kaoto ${{ github.event.client_payload.kaoto_version }}" \
+            --body "$(cat <<'EOF'
+          Kaoto **${{ github.event.client_payload.kaoto_version }}** has been released and tagged as `stable`.
+
+          The community operator forks have been synced automatically:
+          - [KaotoIO/community-operators](https://github.com/KaotoIO/community-operators)
+          - [KaotoIO/community-operators-prod](https://github.com/KaotoIO/community-operators-prod)
+
+          ## Next step
+
+          Trigger the [operator release pipeline](https://github.com/KaotoIO/kaoto-operator/actions/workflows/release-pipeline.yml) with the appropriate version inputs.
+          EOF
+          )"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
