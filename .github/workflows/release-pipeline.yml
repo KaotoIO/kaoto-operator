@@ -45,15 +45,15 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
-      - name: "Build"
-        run: make build
-      - name: "Test"
-        run: make test
       - name: "Set up Go"
         uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
           check-latest: true
+      - name: "Build"
+        run: make build
+      - name: "Test"
+        run: make test
       - name: "Login to Container registry"
         uses: docker/login-action@v3
         with:
