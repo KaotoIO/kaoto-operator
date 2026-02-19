@@ -152,14 +152,23 @@ jobs:
       - build-and-push
       - tag-and-release
     steps:
-      - name: "Checkout Operarot"
+      - name: "Generate GitHub App token"
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.KAOTO_RELEASE_APP_KEY }}
+          private-key: ${{ secrets.KAOTO_NPM_TOKEN }}
+          owner: KaotoIO
+          repositories: community-operators
+
+      - name: "Checkout Operator"
         uses: actions/checkout@v6
-        
+
       - name: "Checkout k8s-operator project"
         uses: actions/checkout@v6
         with:
           repository: KaotoIO/community-operators
-          token: ${{ secrets.KAOTO_CI_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           path: community-operators
           ref: main
 
@@ -168,11 +177,11 @@ jobs:
         with:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
-          
+
       - name: "Create, prepare branch and open PR for k8s-operator"
         env:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
-          GH_TOKEN: ${{ secrets.KAOTO_CI_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
 
           pushd community-operators
@@ -206,28 +215,36 @@ jobs:
       - build-and-push
       - tag-and-release
     steps:
+      - name: "Generate GitHub App token"
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.KAOTO_RELEASE_APP_KEY }}
+          private-key: ${{ secrets.KAOTO_NPM_TOKEN }}
+          owner: KaotoIO
+          repositories: community-operators-prod
 
-      - name: "Checkout Operarot"
+      - name: "Checkout Operator"
         uses: actions/checkout@v6
-      
+
       - name: "Checkout k8s-operator project"
         uses: actions/checkout@v6
         with:
           repository: KaotoIO/community-operators-prod
-          token: ${{ secrets.KAOTO_CI_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           path: community-operators-prod
           ref: main
 
-      - name: "🛰️ Download UI Dist"
+      - name: "🛰️ Download Bundle"
         uses: actions/download-artifact@v7
         with:
           name: bundle-${{ github.event.inputs.operator_version }}.tgz
           path: "${{ runner.temp }}"
-          
+
       - name: "Create, prepare branch and open PR for community-operators-prod"
         env:
           BRANCH_NAME: "kaoto-operator.${{ github.event.inputs.operator_version }}"
-          GH_TOKEN: ${{ secrets.KAOTO_CI_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
 
           pushd community-operators-prod
