@@ -107,7 +107,7 @@ jobs:
           ls -lh ${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz
 
       - name: "🔧 Persist Bundle"
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: "bundle-${{ github.event.inputs.operator_version }}.tgz"
           path: "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz"
