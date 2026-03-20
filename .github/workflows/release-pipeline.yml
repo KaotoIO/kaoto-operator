@@ -55,7 +55,7 @@ jobs:
       - name: "Test"
         run: make test
       - name: "Login to Container registry"
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: "quay.io"
           username: ${{ secrets.QUAY_USERNAME }}
