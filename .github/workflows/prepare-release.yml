@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: "Generate GitHub App token"
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.KAOTO_RELEASE_APP_KEY }}
           private-key: ${{ secrets.KAOTO_NPM_TOKEN }}
