@@ -1,6 +1,6 @@
 module github.com/kaotoIO/kaoto-operator
 
-go 1.25.0
+go 1.25.7
 
 require (
 	github.com/evanphx/json-patch v5.9.0+incompatible
