@@ -35,6 +35,7 @@ jobs:
     strategy:
       matrix:
         kubernetes-version:
+          # renovate: datasource=docker depName=kindest/node extractVersion=^v(?<version>.*)$
           - "1.32.2"
     steps:
       - name: "Checkout"
@@ -47,6 +48,7 @@ jobs:
       - name: 'SetUp KinD'
         uses: container-tools/kind-action@v2
         with:
+          # renovate: datasource=github-releases depName=kubernetes-sigs/kind
           version: "v0.27.0"
           registry: false
           node_image: kindest/node:v${{ matrix.kubernetes-version }}

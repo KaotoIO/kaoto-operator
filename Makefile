@@ -217,11 +217,17 @@ OPM ?= $(LOCALBIN)/opm
 CRANE ?= $(LOCALBIN)/crane
 
 ## Tool Versions
+# renovate: datasource=github-releases depName=kubernetes-sigs/kustomize
 KUSTOMIZE_VERSION ?= v5.3.0
+# renovate: datasource=github-releases depName=kubernetes-sigs/controller-tools
 CONTROLLER_TOOLS_VERSION ?= v0.20.1
+# renovate: datasource=go depName=k8s.io/code-generator
 CODEGEN_VERSION ?= v0.35.1
+# renovate: datasource=github-releases depName=golangci/golangci-lint
 GOLANG_LINT_VERSION ?= v1.55.2
+# renovate: datasource=github-releases depName=operator-framework/operator-sdk
 OPERATOR_SDK_VERSION ?= v1.33.0
+# renovate: datasource=github-releases depName=operator-framework/operator-registry
 OPM_VERSION ?= v1.23.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
