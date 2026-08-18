@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>KaotoIO/renovate-config",
+    "customManagers:makefileVersions"
+  ],
+  "packageRules": [
+    {
+      "description": "Do not update intentionally floating Docker image tags",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchCurrentValue": "/^(?:latest|main|main-jvm|nonroot|stable)$/",
+      "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update the Kubernetes and kind versions used by the E2E workflow",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/e2e\\.yml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?\\s+- \\\"(?<currentValue>[^\\\"]+)\\\"",
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?\\s+version: \\\"(?<currentValue>[^\\\"]+)\\\""
+      ]
+    }
+  ]
+}
