@@ -85,7 +85,7 @@ func ApplyPatch(source runtime.Object) (*unstructured.Unstructured, error) {
 	}
 }
 
-func removeNilValues(v reflect.Value, parent reflect.Value) {
+func removeNilValues(v, parent reflect.Value) {
 	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		v = v.Elem()
 	}
