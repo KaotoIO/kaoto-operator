@@ -51,7 +51,6 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 	}
 
 	if rr.Kaoto.Spec.Ingress != nil {
-
 		if err := a.ingress(ctx, rr); err != nil {
 			ingressCondition.Status = metav1.ConditionFalse
 			ingressCondition.Reason = "Failure"
@@ -59,19 +58,8 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 
 			return err
 		}
-
-	} else {
-		ingressCondition.Status = metav1.ConditionFalse
-		ingressCondition.Reason = "NotRequires"
-		ingressCondition.Message = "NotRequires"
-
-		if err := a.cleanup(ctx, rr); err != nil {
-			ingressCondition.Status = metav1.ConditionFalse
-			ingressCondition.Reason = "Failure"
-			ingressCondition.Message = err.Error()
-
-			return err
-		}
+	} else if err := a.handleNotRequired(ctx, rr, &ingressCondition); err != nil {
+		return err
 	}
 
 	var in netv1.Ingress
@@ -147,6 +135,22 @@ func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) 
 	)
 
 	return err
+}
+
+func (a *ingressAction) handleNotRequired(ctx context.Context, rr *ReconciliationRequest, condition *metav1.Condition) error {
+	condition.Status = metav1.ConditionFalse
+	condition.Reason = "NotRequires"
+	condition.Message = "NotRequires"
+
+	if err := a.cleanup(ctx, rr); err != nil {
+		condition.Status = metav1.ConditionFalse
+		condition.Reason = "Failure"
+		condition.Message = err.Error()
+
+		return err
+	}
+
+	return nil
 }
 
 func (a *ingressAction) cleanup(ctx context.Context, rr *ReconciliationRequest) error {
