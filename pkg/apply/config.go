@@ -38,13 +38,13 @@ func WithPort(name string, port int32) *corev1ac.ContainerPortApplyConfiguration
 		WithProtocol(corev1.ProtocolTCP)
 }
 
-func WithEnv(name string, value string) *corev1ac.EnvVarApplyConfiguration {
+func WithEnv(name, value string) *corev1ac.EnvVarApplyConfiguration {
 	return corev1ac.EnvVar().
 		WithName(name).
 		WithValue(value)
 }
 
-func WithEnvFromField(name string, value string) *corev1ac.EnvVarApplyConfiguration {
+func WithEnvFromField(name, value string) *corev1ac.EnvVarApplyConfiguration {
 	return corev1ac.EnvVar().
 		WithName(name).
 		WithValueFrom(corev1ac.EnvVarSource().WithFieldRef(corev1ac.ObjectFieldSelector().WithFieldPath(value)))
