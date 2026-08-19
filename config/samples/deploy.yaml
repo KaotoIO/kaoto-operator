@@ -133,6 +133,10 @@ spec:
               name: http
               protocol: TCP
           resources:
+            limits:
+              memory: "600Mi"
+              ephemeral-storage: "500Mi"
             requests:
               cpu: "500m"
               memory: "600Mi"
+              ephemeral-storage: "500Mi"
