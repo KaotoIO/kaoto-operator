@@ -46,7 +46,7 @@ jobs:
           go-version-file: 'go.mod'
           check-latest: true
       - name: 'SetUp KinD'
-        uses: container-tools/kind-action@v2
+        uses: container-tools/kind-action@0ad70e2299366b0e1552c7240f4e4567148f723e # v2
         with:
           # renovate: datasource=github-releases depName=kubernetes-sigs/kind
           version: "v0.27.0"
