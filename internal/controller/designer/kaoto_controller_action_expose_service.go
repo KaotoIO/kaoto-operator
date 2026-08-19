@@ -51,7 +51,7 @@ func (a *serviceAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 	err := a.service(ctx, rr)
 	if err != nil {
 		serviceCondition.Status = metav1.ConditionFalse
-		serviceCondition.Reason = "Failure"
+		serviceCondition.Reason = reasonFailure
 		serviceCondition.Message = err.Error()
 
 		return err
