@@ -31,6 +31,7 @@ func main() {
 		Use:   "kaoto",
 		Short: "kaoto",
 		Run: func(cmd *cobra.Command, args []string) {
+			// Root command is a no-op; all work is delegated to subcommands (e.g. run).
 		},
 	}
 
