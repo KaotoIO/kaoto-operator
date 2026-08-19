@@ -51,7 +51,7 @@ func (a *deployAction) Apply(ctx context.Context, rr *ReconciliationRequest) err
 	err := a.deploy(ctx, rr)
 	if err != nil {
 		deploymentCondition.Status = metav1.ConditionFalse
-		deploymentCondition.Reason = "Failure"
+		deploymentCondition.Reason = reasonFailure
 		deploymentCondition.Message = err.Error()
 	}
 
