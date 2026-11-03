@@ -18,17 +18,22 @@ func ConditionStatus[T conditionType](conditionType T) func(any) corev1.Conditio
 				return corev1.ConditionStatus(c.Status)
 			}
 		case *appsv1.Deployment:
-			if o != nil {
-				for i := range o.Status.Conditions {
-					if string(o.Status.Conditions[i].Type) == string(conditionType) {
-						return o.Status.Conditions[i].Status
-					}
-				}
-			}
+			return deploymentConditionStatus(o, string(conditionType))
 		}
 
 		return corev1.ConditionUnknown
 	}
+}
+
+func deploymentConditionStatus(d *appsv1.Deployment, conditionType string) corev1.ConditionStatus {
+	if d != nil {
+		for i := range d.Status.Conditions {
+			if string(d.Status.Conditions[i].Type) == conditionType {
+				return d.Status.Conditions[i].Status
+			}
+		}
+	}
+	return corev1.ConditionUnknown
 }
 
 func ContainerImage(index int) func(*appsv1.Deployment) string {

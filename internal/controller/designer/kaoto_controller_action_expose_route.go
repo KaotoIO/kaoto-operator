@@ -57,7 +57,6 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 	}
 
 	if rr.Kaoto.Spec.Ingress != nil {
-
 		if err := a.route(ctx, rr); err != nil {
 			ingressCondition.Status = metav1.ConditionFalse
 			ingressCondition.Reason = reasonFailure
@@ -65,19 +64,8 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 
 			return err
 		}
-
-	} else {
-		ingressCondition.Status = metav1.ConditionFalse
-		ingressCondition.Reason = reasonNotRequires
-		ingressCondition.Message = reasonNotRequires
-
-		if err := a.cleanup(ctx, rr); err != nil {
-			ingressCondition.Status = metav1.ConditionFalse
-			ingressCondition.Reason = reasonFailure
-			ingressCondition.Message = err.Error()
-
-			return err
-		}
+	} else if err := a.handleNotRequired(ctx, rr, &ingressCondition); err != nil {
+		return err
 	}
 
 	var in routev1.Route
@@ -142,6 +130,22 @@ func (a *routeAction) route(ctx context.Context, rr *ReconciliationRequest) erro
 	)
 
 	return err
+}
+
+func (a *routeAction) handleNotRequired(ctx context.Context, rr *ReconciliationRequest, condition *metav1.Condition) error {
+	condition.Status = metav1.ConditionFalse
+	condition.Reason = reasonNotRequires
+	condition.Message = reasonNotRequires
+
+	if err := a.cleanup(ctx, rr); err != nil {
+		condition.Status = metav1.ConditionFalse
+		condition.Reason = reasonFailure
+		condition.Message = err.Error()
+
+		return err
+	}
+
+	return nil
 }
 
 func (a *routeAction) cleanup(ctx context.Context, rr *ReconciliationRequest) error {

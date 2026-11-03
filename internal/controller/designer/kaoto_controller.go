@@ -126,68 +126,84 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, res *kaotoApi.Kaoto) (c
 
 	l.Info("Reconciling", "resource", rr.String())
 
-	if rr.Kaoto.ObjectMeta.DeletionTimestamp.IsZero() {
-
-		//
-		// Add finalizer
-		//
-
-		if controllerutil.AddFinalizer(rr.Kaoto, defaults.KaotoFinalizerName) {
-			if err := r.Update(ctx, rr.Kaoto); err != nil {
-				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
-				}
-
-				return ctrl.Result{}, errors.Wrapf(err, "failure adding finalizer to connector cluster %s", rr.String())
-			}
-		}
-	} else {
-
-		//
-		// Cleanup leftovers if needed
-		//
-
-		for i := len(r.actions) - 1; i >= 0; i-- {
-			if err := r.actions[i].Cleanup(ctx, &rr); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-
-		//
-		// Handle finalizer
-		//
-
-		if controllerutil.RemoveFinalizer(rr.Kaoto, defaults.KaotoFinalizerName) {
-			if err := r.Update(ctx, rr.Kaoto); err != nil {
-				if k8serrors.IsConflict(err) {
-					return ctrl.Result{}, err
-				}
-
-				return ctrl.Result{}, errors.Wrapf(err, "failure removing finalizer from connector cluster %s", rr.String())
-			}
-		}
-
-		return ctrl.Result{}, nil
+	done, resVal, err := r.handleFinalizer(ctx, &rr)
+	if done || err != nil {
+		return resVal, err
 	}
 
 	//
 	// Reconcile
 	//
 
+	allErrors := r.runActions(ctx, &rr)
+	r.updateReconcileStatus(&rr, allErrors)
+
+	//
+	// Update status
+	//
+
+	if err := r.Status().Update(ctx, rr.Kaoto); err != nil {
+		if k8serrors.IsConflict(err) {
+			l.Info(err.Error())
+			return ctrl.Result{Requeue: true}, nil
+		}
+		allErrors = multierr.Append(allErrors, err)
+	}
+
+	return ctrl.Result{}, allErrors
+}
+
+func (r *KaotoReconciler) handleFinalizer(ctx context.Context, rr *ReconciliationRequest) (bool, ctrl.Result, error) {
+	if rr.Kaoto.ObjectMeta.DeletionTimestamp.IsZero() {
+		// Add finalizer
+		if controllerutil.AddFinalizer(rr.Kaoto, defaults.KaotoFinalizerName) {
+			if err := r.Update(ctx, rr.Kaoto); err != nil {
+				if k8serrors.IsConflict(err) {
+					return true, ctrl.Result{}, err
+				}
+				return true, ctrl.Result{}, errors.Wrapf(err, "failure adding finalizer to connector cluster %s", rr.String())
+			}
+		}
+		return false, ctrl.Result{}, nil
+	}
+
+	// Cleanup leftovers if needed
+	for i := len(r.actions) - 1; i >= 0; i-- {
+		if err := r.actions[i].Cleanup(ctx, rr); err != nil {
+			return true, ctrl.Result{}, err
+		}
+	}
+
+	// Handle finalizer
+	if controllerutil.RemoveFinalizer(rr.Kaoto, defaults.KaotoFinalizerName) {
+		if err := r.Update(ctx, rr.Kaoto); err != nil {
+			if k8serrors.IsConflict(err) {
+				return true, ctrl.Result{}, err
+			}
+			return true, ctrl.Result{}, errors.Wrapf(err, "failure removing finalizer from connector cluster %s", rr.String())
+		}
+	}
+
+	return true, ctrl.Result{}, nil
+}
+
+func (r *KaotoReconciler) runActions(ctx context.Context, rr *ReconciliationRequest) error {
+	var allErrors error
+	for i := range r.actions {
+		if err := r.actions[i].Apply(ctx, rr); err != nil {
+			allErrors = multierr.Append(allErrors, err)
+		}
+	}
+	return allErrors
+}
+
+func (r *KaotoReconciler) updateReconcileStatus(rr *ReconciliationRequest, allErrors error) {
 	reconcileCondition := metav1.Condition{
 		Type:               "Reconcile",
 		Status:             metav1.ConditionTrue,
 		Reason:             "Reconciled",
 		Message:            "Reconciled",
 		ObservedGeneration: rr.Kaoto.Generation,
-	}
-
-	var allErrors error
-
-	for i := range r.actions {
-		if err := r.actions[i].Apply(ctx, &rr); err != nil {
-			allErrors = multierr.Append(allErrors, err)
-		}
 	}
 
 	if allErrors != nil {
@@ -206,18 +222,4 @@ func (r *KaotoReconciler) Reconcile(ctx context.Context, res *kaotoApi.Kaoto) (c
 	sort.SliceStable(rr.Kaoto.Status.Conditions, func(i, j int) bool {
 		return rr.Kaoto.Status.Conditions[i].Type < rr.Kaoto.Status.Conditions[j].Type
 	})
-
-	//
-	// Update status
-	//
-
-	err := r.Status().Update(ctx, rr.Kaoto)
-	if err != nil && k8serrors.IsConflict(err) {
-		l.Info(err.Error())
-		return ctrl.Result{Requeue: true}, nil
-	} else if err != nil {
-		allErrors = multierr.Append(allErrors, err)
-	}
-
-	return ctrl.Result{}, allErrors
 }
