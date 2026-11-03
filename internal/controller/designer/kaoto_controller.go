@@ -208,8 +208,8 @@ func (r *KaotoReconciler) updateReconcileStatus(rr *ReconciliationRequest, allEr
 
 	if allErrors != nil {
 		reconcileCondition.Status = metav1.ConditionFalse
-		reconcileCondition.Reason = "Failure"
-		reconcileCondition.Message = "Failure"
+		reconcileCondition.Reason = reasonFailure
+		reconcileCondition.Message = reasonFailure
 
 		rr.Kaoto.Status.Phase = "Error"
 	} else {

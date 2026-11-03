@@ -20,6 +20,11 @@ import (
 	netv1ac "k8s.io/client-go/applyconfigurations/networking/v1"
 )
 
+const (
+	ingressPathSuffix = "(/|$)(.*)"
+	reasonNotRequires = "NotRequires"
+)
+
 func NewIngressAction() Action {
 	return &ingressAction{}
 }
@@ -53,7 +58,7 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 	if rr.Kaoto.Spec.Ingress != nil {
 		if err := a.ingress(ctx, rr); err != nil {
 			ingressCondition.Status = metav1.ConditionFalse
-			ingressCondition.Reason = "Failure"
+			ingressCondition.Reason = reasonFailure
 			ingressCondition.Message = err.Error()
 
 			return err
@@ -66,7 +71,7 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 
 	if err := rr.Get(ctx, rr.Key(), &in); err != nil && !k8serrors.IsNotFound(err) {
 		ingressCondition.Status = metav1.ConditionFalse
-		ingressCondition.Reason = "Failure"
+		ingressCondition.Reason = reasonFailure
 		ingressCondition.Message = err.Error()
 	} else {
 		rr.Kaoto.Status.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local/", rr.Kaoto.Name, rr.Kaoto.Namespace)
@@ -92,7 +97,7 @@ func (a *ingressAction) Apply(ctx context.Context, rr *ReconciliationRequest) er
 
 func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) error {
 	host := ""
-	path := "/" + rr.Kaoto.Name + "(/|$)(.*)"
+	path := "/" + rr.Kaoto.Name + ingressPathSuffix
 
 	if rr.Kaoto.Spec.Ingress.Host != "" {
 		host = rr.Kaoto.Spec.Ingress.Host
@@ -101,8 +106,8 @@ func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) 
 		path = rr.Kaoto.Spec.Ingress.Path
 	}
 
-	if !strings.HasSuffix(path, "(/|$)(.*)") {
-		path += "(/|$)(.*)"
+	if !strings.HasSuffix(path, ingressPathSuffix) {
+		path += ingressPathSuffix
 	}
 
 	resource := netv1ac.Ingress(rr.Kaoto.Name, rr.Kaoto.Namespace).
@@ -139,12 +144,12 @@ func (a *ingressAction) ingress(ctx context.Context, rr *ReconciliationRequest) 
 
 func (a *ingressAction) handleNotRequired(ctx context.Context, rr *ReconciliationRequest, condition *metav1.Condition) error {
 	condition.Status = metav1.ConditionFalse
-	condition.Reason = "NotRequires"
-	condition.Message = "NotRequires"
+	condition.Reason = reasonNotRequires
+	condition.Message = reasonNotRequires
 
 	if err := a.cleanup(ctx, rr); err != nil {
 		condition.Status = metav1.ConditionFalse
-		condition.Reason = "Failure"
+		condition.Reason = reasonFailure
 		condition.Message = err.Error()
 
 		return err

@@ -59,7 +59,7 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 	if rr.Kaoto.Spec.Ingress != nil {
 		if err := a.route(ctx, rr); err != nil {
 			ingressCondition.Status = metav1.ConditionFalse
-			ingressCondition.Reason = "Failure"
+			ingressCondition.Reason = reasonFailure
 			ingressCondition.Message = err.Error()
 
 			return err
@@ -72,7 +72,7 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 
 	if err := rr.Get(ctx, rr.Key(), &in); err != nil && !k8serrors.IsNotFound(err) {
 		ingressCondition.Status = metav1.ConditionFalse
-		ingressCondition.Reason = "Failure"
+		ingressCondition.Reason = reasonFailure
 		ingressCondition.Message = err.Error()
 	} else {
 		rr.Kaoto.Status.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local/", rr.Kaoto.Name, rr.Kaoto.Namespace)
@@ -134,12 +134,12 @@ func (a *routeAction) route(ctx context.Context, rr *ReconciliationRequest) erro
 
 func (a *routeAction) handleNotRequired(ctx context.Context, rr *ReconciliationRequest, condition *metav1.Condition) error {
 	condition.Status = metav1.ConditionFalse
-	condition.Reason = "NotRequires"
-	condition.Message = "NotRequires"
+	condition.Reason = reasonNotRequires
+	condition.Message = reasonNotRequires
 
 	if err := a.cleanup(ctx, rr); err != nil {
 		condition.Status = metav1.ConditionFalse
-		condition.Reason = "Failure"
+		condition.Reason = reasonFailure
 		condition.Message = err.Error()
 
 		return err
