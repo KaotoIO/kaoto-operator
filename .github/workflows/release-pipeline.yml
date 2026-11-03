@@ -94,11 +94,9 @@ jobs:
             echo "WARNING: No changes were detected."
           fi
 
-      - name: "🔧 Enrich Bundle"
-        shell: bash
-        run: |
-          cd bundle/manifests
-          echo "  replaces: kaoto-operator.v${{ github.event.inputs.replace_operator_version }}" >> kaoto-operator.clusterserviceversion.yaml         
+      # NOTE: the upgrade-graph edge is intentionally NOT added here. The bundle
+      # produced by this job is shared by both the Kubernetes and the OpenShift
+      # catalogs, which need different edges, so each target job adds its own.
 
       - name: "🔧 Tar bundle"
         shell: bash
@@ -191,9 +189,15 @@ jobs:
 
           mkdir -p operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           tar -xzf "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" -C operators/kaoto-operator/${{ github.event.inputs.operator_version }}
+
+          # The Kubernetes catalog is a single stream, so the previous version is
+          # always present and a linear `replaces` edge is the correct graph.
+          CSV="operators/kaoto-operator/${{ github.event.inputs.operator_version }}/manifests/kaoto-operator.clusterserviceversion.yaml"
+          echo "  replaces: kaoto-operator.v${{ github.event.inputs.replace_operator_version }}" >> "${CSV}"
+
           git add operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
-          
+
           git push -u origin ${BRANCH_NAME}
           gh pr create --title "operator kaoto (${{ github.event.inputs.operator_version }})" -F ../.github/operatorhub/community-operators -R k8s-operatorhub/community-operators
           popd
@@ -246,7 +250,17 @@ jobs:
 
           mkdir -p operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           tar -xzf "${{ runner.temp }}/bundle-${{ github.event.inputs.operator_version }}.tgz" -C operators/kaoto-operator/${{ github.event.inputs.operator_version }}
-          echo "  com.redhat.openshift.versions: ${{ github.event.inputs.supported_openshift_range }}" >> operators/kaoto-operator/${{ github.event.inputs.operator_version }}/metadata/annotations.yaml     
+          echo "  com.redhat.openshift.versions: ${{ github.event.inputs.supported_openshift_range }}" >> operators/kaoto-operator/${{ github.event.inputs.operator_version }}/metadata/annotations.yaml
+
+          # OpenShift ships one catalog per OCP version. When a new OCP version
+          # enters the supported range above, the bundle lands in a catalog where
+          # the previous version was never published, so a `replaces` edge would
+          # dangle and fail validation. `skips` does not require its target to
+          # exist in the catalog, so the upgrade graph stays valid either way.
+          CSV="operators/kaoto-operator/${{ github.event.inputs.operator_version }}/manifests/kaoto-operator.clusterserviceversion.yaml"
+          echo "  skips:" >> "${CSV}"
+          echo "    - kaoto-operator.v${{ github.event.inputs.replace_operator_version }}" >> "${CSV}"
+
           git add operators/kaoto-operator/${{ github.event.inputs.operator_version }}
           git commit -m "operator kaoto-operator (${{ github.event.inputs.operator_version }})"
           
