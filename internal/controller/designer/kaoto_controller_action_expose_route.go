@@ -60,7 +60,7 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 
 		if err := a.route(ctx, rr); err != nil {
 			ingressCondition.Status = metav1.ConditionFalse
-			ingressCondition.Reason = "Failure"
+			ingressCondition.Reason = reasonFailure
 			ingressCondition.Message = err.Error()
 
 			return err
@@ -68,12 +68,12 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 
 	} else {
 		ingressCondition.Status = metav1.ConditionFalse
-		ingressCondition.Reason = "NotRequires"
-		ingressCondition.Message = "NotRequires"
+		ingressCondition.Reason = reasonNotRequires
+		ingressCondition.Message = reasonNotRequires
 
 		if err := a.cleanup(ctx, rr); err != nil {
 			ingressCondition.Status = metav1.ConditionFalse
-			ingressCondition.Reason = "Failure"
+			ingressCondition.Reason = reasonFailure
 			ingressCondition.Message = err.Error()
 
 			return err
@@ -84,7 +84,7 @@ func (a *routeAction) Apply(ctx context.Context, rr *ReconciliationRequest) erro
 
 	if err := rr.Get(ctx, rr.Key(), &in); err != nil && !k8serrors.IsNotFound(err) {
 		ingressCondition.Status = metav1.ConditionFalse
-		ingressCondition.Reason = "Failure"
+		ingressCondition.Reason = reasonFailure
 		ingressCondition.Message = err.Error()
 	} else {
 		rr.Kaoto.Status.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local/", rr.Kaoto.Name, rr.Kaoto.Namespace)
