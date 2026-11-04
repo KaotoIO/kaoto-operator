@@ -2,15 +2,6 @@ name: 🏷️ Release operator and create branches to add new operators versions
 on:
   workflow_dispatch:
     inputs:
-      default_bump:
-        type: choice
-        description: |
-          Define what kind of bump you want
-        options: 
-        - major
-        - minor
-        - patch
-        required: true
       operator_version:
         type: string
         description: |
@@ -131,7 +122,12 @@ jobs:
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ github.event.inputs.tag_version }}
+          # Tag the release with the bundle version that was actually built.
+          # This previously read a `tag_version` input that was never declared,
+          # so it resolved to an empty string and the action silently fell back
+          # to auto-bumping - which is why the repo was tagged v0.0.27 while
+          # shipping bundle 2.14.0.
+          custom_tag: ${{ github.event.inputs.operator_version }}
           create_annotated_tag: true
           tag_prefix: "v"
 
@@ -152,6 +148,18 @@ jobs:
     steps:
       - name: "Checkout Operarot"
         uses: actions/checkout@v7
+
+      # Must run before the checkout below, so that the fork's main already
+      # matches upstream when we branch from it. A stale fork would otherwise
+      # force a rebase here, dragging unrelated upstream commits into the
+      # release branch - including upstream workflow files, whose push is
+      # rejected unless the token carries the `workflow` scope.
+      - name: "Sync fork with upstream"
+        env:
+          GH_TOKEN: ${{ secrets.KAOTO_CI_TOKEN }}
+        run: |
+          gh repo sync KaotoIO/community-operators \
+            --source k8s-operatorhub/community-operators
 
       - name: "Checkout k8s-operator project"
         uses: actions/checkout@v7
@@ -180,9 +188,6 @@ jobs:
 
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
-          git remote add upstream https://github.com/k8s-operatorhub/community-operators.git
-          git pull --rebase upstream main
 
           git push -d origin ${BRANCH_NAME} || echo 'Skip branch deletion'
           git checkout -b ${BRANCH_NAME}
@@ -214,6 +219,16 @@ jobs:
       - name: "Checkout Operarot"
         uses: actions/checkout@v7
 
+      # See the note in prepare-k8s-operator-branch: syncing the fork before
+      # checkout is what keeps upstream workflow files out of the release
+      # branch. This is the job that failed on the 2.14.0 release.
+      - name: "Sync fork with upstream"
+        env:
+          GH_TOKEN: ${{ secrets.KAOTO_CI_TOKEN }}
+        run: |
+          gh repo sync KaotoIO/community-operators-prod \
+            --source redhat-openshift-ecosystem/community-operators-prod
+
       - name: "Checkout k8s-operator project"
         uses: actions/checkout@v7
         with:
@@ -241,9 +256,6 @@ jobs:
 
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
-          git remote add upstream https://github.com/redhat-openshift-ecosystem/community-operators-prod.git
-          git pull --rebase upstream main
 
           git push -d origin ${BRANCH_NAME} || echo 'Skip branch deletion'
           git checkout -b ${BRANCH_NAME}
